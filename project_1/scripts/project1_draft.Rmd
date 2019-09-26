@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 rm(list = ls())
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = F)
 library(dplyr)
 library(ggplot2)
 # options("max.print" = 1000)
@@ -16,7 +16,7 @@ library(ggplot2)
 ### 1. Load the dataset
 
 ```{r}
-path <- paste0(getwd(),"/data/")
+path <- "/Users/jieun/github_updated/bios611-projects-fall-2019-jennprk/project_1/data/"
 dat <- as.data.frame(data.table::fread(file=paste0(path,"UMD_Services_Provided_20190719.tsv"), col.names = c("Date", "ClientFileNum", "ClientFileMerge", "BusTicketCount", "Note", "FoodProvided",
                                                      "Food_lbs", "Clothing", "Diapers", "SchoolKit", "HygieneKit", "Referrals", "FinSupport",
                                                      "TypeOfBillPaid", "PayerOfSupport", "F1", "F2", "F3")))
