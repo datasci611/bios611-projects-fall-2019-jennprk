@@ -1,0 +1,455 @@
+---
+title: '[Project1] Urban Ministries of Durham'
+subtitle: BIOS611, Fall 2019
+author: "Ji-Eun Park"
+date: "10/6/2019"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+knitr::opts_chunk$set(echo = F, fig.width = 6, fig.height = 6, fig.align = "center", warning = F, message = F)
+library(dplyr)
+library(ggplot2)
+library(RColorBrewer)
+library(lubridate)
+library(zoo)
+library(BTKR)
+library(multcomp)
+library(flextable)
+library(summarytools) # https://cran.r-project.org/src/contrib/Archive/summarytools/summarytools_0.9.2.tar.gz
+```
+
+### Background
+
+<p align="center">
+<img src = 'https://tva1.sinaimg.cn/large/006y8mN6ly1g7pca1mq70j30dw0ak3zf.jpg'>
+</p>
+<br>
+
+**Urban Ministries of Durham (UMD)** is the organization that provides food, clothing, shelter and supportive services to our neighbors in need. They have been serving communities around in order to carry out this mission while providing a welcoming, caring and compassionate environment that affirms the dignity of our guests, volunteers and staff.
+
+UMD was developed and is partially supported by a diverse group: many individuals, foundations, corporations, and government. In particular, their main services include food, shelter, clothing and supportive services for over 6,000 men, women and children annually.
+
+<br><br><br>
+
+### Project Goal and Research Questions
+
++ **Goal**: To better understand the UMD's primary services such food, clothing, diapers, and etc. and to see if there is any trend and pattern over time. In particular, we are interested in the questions below:
+
+    1. How many clients visted more than one single year (i.e. multiple times over the years)?
+    2. Are there specific service/goods in higher demand recently?
+    3. Are there specific trends in higher demand in certain seasons?
+    4. Are there higher demand of support from the organization than before? Should the organization be prepared for more budget in order to support the future demands?
+
+<br><br><br>
+
+### Data source
+
+The original UMD dataset consists of 79838 observations with 18 variables. The details of each variable was summarized below:
+
+| Variable                     | Details                                                           | 
+|------------------------------|-------------------------------------------------------------------| 
+| `Date`                       | Date                                                              | 
+| `Client File Number`         | Unique ID                                                         | 
+| `Client File Merge`          | Unique ID from other document before merge                        | 
+| `Bus Tickets (Number of)`    | Number of Bus Tickets Provided                                    | 
+| `Notes of Service`           | Details in words                                                  | 
+| `Food Provided for`          | Number of Food Provided                                           | 
+| `Food Pounds`                | Weight of Food Provided in lbs                                    | 
+| `Clothing Items`             | Number of Clothes Supported                                       | 
+| `Diapers`                    | Number of Diapers Provided                                        | 
+| `School Kits`                | Number of School Kits Provided                                    | 
+| `Hygiene Kits`               | Number of Hygiene Kits Provided                                   | 
+| `Referrals`                  | Referrals, other detail information                               | 
+| `Financial Support`          | Monetary support provided in dollars                              | 
+| `Type of Bill Paid`          | Housing or utilities bill paid (e.g. rent, electricity, and etc.) | 
+| `Payer of Support`           | Who paid/supported                                                | 
+| `Field1`, `Field2`, `Field3` | Other detail information                                          | 
+
+<br><br><br>
+
+```{r eval = F}
+### 1. Load the dataset"
+path <- "../data/raw/"
+dat <- as.data.frame(data.table::fread(file=paste0(path,"UMD_Services_Provided_20190719.tsv"), 
+                                       col.names = c("Date", "ClientFileNum", "ClientFileMerge", "BusTicketCount", "Note", "FoodProvided",
+                                                     "Food_lbs", "Clothing", "Diapers", "SchoolKit", "HygieneKit", "Referrals", "FinSupport",
+                                                     "TypeOfBillPaid", "PayerOfSupport", "F1", "F2", "F3")))
+```
+
+```{r eval=F}
+# 2. Data wrangling
+## (1) `Date`
+dat$Date <- as.Date(dat$Date, format = "%m/%d/%Y") 
+# dat$Date[dat$Date > Sys.Date()] # There are 7 dates which are in the future. It seems that they are typos.
+
+base.date <- as.Date("1983-01-01", format="%Y-%m-%d") # Set the base date of the year the org was founded
+dat <- dat %>%
+  filter(Date <= Sys.Date(), Date >= base.date) # Filtered out abnormal dates, where abnormal dates are ## 1) earlier than the foundation year (01-01-1983), 2) later than today.
+
+##(2) Generate categorical year column"
+# Generate a column with only the year of the visit date
+dat$Year <- format(as.Date(dat$Date, format="%d/%m/%Y"),"%Y")
+
+# Generate a categorical date column from 1 to 10. 1 is the earliest, 2 is the most recent.
+dat$Date.cat <- ifelse(dat$Year < format(as.Date("2000", format="%Y"), "%Y"), "1990s", ifelse(dat$Year < format(as.Date("2010", format="%Y"), "%Y"), "2000s", "2010s"))
+
+## (3) Impute NAs with 0s for service/goods variables
+dat %>%
+  mutate(BusTicketCount = replace(BusTicketCount,
+                                  is.na(BusTicketCount), 0),
+         FoodProvided = replace(FoodProvided,
+                                  is.na(FoodProvided), 0),
+         Food_lbs = replace(Food_lbs,
+                                  is.na(Food_lbs), 0),
+         Clothing = replace(Clothing,
+                                  is.na(Clothing), 0),
+         Diapers = replace(Diapers,
+                                  is.na(Diapers), 0),
+         SchoolKit = replace(SchoolKit,
+                                  is.na(SchoolKit), 0),
+         HygieneKit = replace(HygieneKit,
+                                  is.na(HygieneKit), 0),
+         FinSupport = replace(FinSupport,
+                                  is.na(FinSupport), 0)) -> dat
+
+## (4) Remove unwanted variables
+dat <- dat %>% 
+  dplyr::select(-c(ClientFileMerge, Note, Referrals, TypeOfBillPaid, PayerOfSupport, F1, F2, F3))
+
+
+# Output the preprocessed dataset
+dput(dat, "../data/derived/processed_dat_UMD")
+write.csv(dat, "../data/derived/processed_dat_UMD.csv", row.names = F)
+```
+
+### Exploratory Data Analysis
+
+Since the dataset was messy, the data got thorugh preprocessing process. All the missing values are imputed by 0 and the below is the summary of the preprocessed dataset.
+
+```{r results = "markup"}
+dat <- dget("../data/derived/processed_dat_UMD")
+print(dfSummary(dat %>% dplyr::select(-Year, -Date.cat), graph.magnif = 0.75), method = 'render')
+```
+
+<br><br><br>
+
+***
+
+### 1. How many clients did they visit more than one single year (i.e. multiple times over the years)?
+
+> + Around 87% of the clients have visited and got aided less than three time. This indicates that usually our clients do not have constant help.
+
+```{r}
+# generate data with the proportion of number of visitors
+dat %>%
+  group_by(ClientFileNum) %>%
+  count(Year) %>%
+  group_by(ClientFileNum) %>%
+  count() -> ead3 # count 
+
+ead3$freq <- ifelse(ead3$n <=3, "le3", ">3") # divide into 2 groups. 1)more than 3 visits, 2) l.e. 3 visits
+ead3 %>% group_by(freq) %>% count() -> ead3.1
+ead3.1$p <- round(ead3.1$n / sum(ead3.1$n),3)*100
+
+# generate a barplot to make pie chart
+bp <- ggplot(ead3.1, aes(x="",y=p, fill=freq))+
+  geom_bar(width = 1, stat = "identity") +
+  theme_bw() +
+  labs(title="Proportion of Number of\n Visits Years per Client") +
+  scale_fill_manual(name = "Number of Visiting Years", labels = c("more than 3 visits","<=3 visits"),values=brewer.pal(3, "Set2")[c(2, 1)])
+
+# make a theme to remove the outer box
+blank_theme <- theme(
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  panel.border = element_blank(),
+  panel.grid=element_blank(),
+  axis.ticks = element_blank(),
+  plot.title=element_text(size=16, face="bold")
+  )
+
+# Geneate into pie chart
+pie <- bp + 
+    coord_polar("y", start=0) + 
+    theme(axis.text.x = element_blank(), 
+          plot.title = element_text(hjust = 0.5, size = 15, face = "bold")) +
+    blank_theme + geom_text(x=c(1.2,1.3), y=c(-6,10),label=scales::percent(ead3.1$p/100))
+
+pie
+
+ggsave("pieplot.jpeg",plot=pie,path="../results/plots")
+```
+
+<br><br><br>
+
+***
+
+### 2. Are there specific service/goods in higher demand recently?
+
+> + There was no specific items or services in higher demand recently, where "recent" was defined as the most recent 3 years inlcuding 2019 (i.e. 2016-2019).
+
+```{r fig.width = 10, fig.height = 16, fig.align="center"}
+dat <- dat %>% arrange(Date) # Order the dataset by time order
+dat.q2 <- dat%>% dplyr::select(4:11) # select only goods/services and years
+colpal <- brewer.pal(6, "Set2") # generate color palette for the plotss
+
+# Food provided 
+q2.1 <- dat.q2 %>% 
+  group_by(Year) %>%
+  summarise(average = mean(FoodProvided)) 
+
+ggplot(dat=q2.1, aes(x=Year, y=average, fill=colpal[1])) +
+  geom_bar(stat="identity") +
+  labs(title="Average Food provided by Year", x="Year",y="FoodProvided") +
+  theme_bw() + 
+  scale_fill_manual(name = "", labels = "Food Provided(#)", values=colpal[1]) +
+  theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold")) +
+  theme(axis.text.x = element_text(angle = 60)) -> pFp
+ggsave("bar_foodn.jpeg",path="../results/plots")
+
+# Food provided by lbs
+q2.2 <- dat.q2 %>% 
+  group_by(Year) %>%
+  summarise(average = mean(Food_lbs) )
+
+ggplot(dat=q2.2, aes(x=Year, y=average, fill=colpal[2])) +
+  geom_bar(stat="identity") +
+  labs(title="Average Food(pounds) provided by Year", x="Year",y="Food(lbs)") +
+  theme_bw() +
+  scale_fill_manual(name = "", labels = "Food Provided(#)", values=colpal[2]) +
+  theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold")) +
+  theme(axis.text.x = element_text(angle = 60)) -> pFl
+ggsave("bar_foodlbs.jpeg",path="../results/plots")
+
+# Clothing
+q2.3 <- dat.q2 %>% 
+  group_by(Year) %>%
+  summarise(average = mean(Clothing)) 
+
+ggplot(dat=q2.3, aes(x=Year, y=average, fill=colpal[3])) +
+  geom_bar(stat="identity") +
+  labs(title="Average Clothing provided by Year", x="Year",y="Clothing") +
+  theme_bw() + 
+  scale_fill_manual(name = "", labels = "Food Provided(#)", values=colpal[3]) +
+  theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold")) +
+  theme(axis.text.x = element_text(angle = 60)) -> pC
+ggsave("bar_clothes.jpeg",path="../results/plots")
+
+# Diapers
+q2.4 <- dat.q2 %>% 
+  group_by(Year) %>%
+  summarise(average = mean(Diapers)) 
+
+ggplot(dat=q2.4, aes(x=Year, y=average, fill=colpal[4])) +
+  geom_bar(stat="identity") +
+  labs(title="Average Diapers provided by Year", x="Year",y="Diapers") +
+  theme_bw() + 
+  scale_fill_manual(name = "", labels = "Food Provided(#)", values=colpal[4]) +
+  theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold")) +
+  theme(axis.text.x = element_text(angle = 60)) -> pD
+ggsave("bar_diaper.jpeg",path="../results/plots")
+
+# SchoolKit
+q2.5 <- dat.q2 %>% 
+  group_by(Year) %>%
+  summarise(average = mean(SchoolKit)) 
+
+ggplot(dat=q2.5, aes(x=Year, y=average, fill=colpal[5])) +
+  geom_bar(stat="identity") +
+  labs(title="Average SchoolKit provided by Year", x="Year",y="SchoolKit") +
+  theme_bw() + 
+  scale_fill_manual(name = "", labels = "Food Provided(#)", values=colpal[5]) +
+  theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold")) +
+  theme(axis.text.x = element_text(angle = 60)) -> pSK
+ggsave("bar_sk.jpeg",path="../results/plots")
+
+# HygieneKit
+q2.6 <- dat.q2 %>% 
+  group_by(Year) %>%
+  summarise(average = mean(HygieneKit)) 
+
+ggplot(dat=q2.6, aes(x=Year, y=average, fill=colpal[6])) +
+  geom_bar(stat="identity") +
+  labs(title="Average HygieneKit provided by Year", x="Year",y="HygieneKit") +
+  theme_bw() +  
+  scale_fill_manual(name = "", labels = "Food Provided(#)", values=colpal[6]) +
+  theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold")) +
+  theme(axis.text.x = element_text(angle = 60)) -> pHK
+ggsave("bar_hk.jpeg",path="../results/plots")
+
+# Arrange the plots in one grid
+gridExtra::grid.arrange(pFp, pFl, pC, pD, pSK, pHK) -> pp
+pp
+
+ggsave("grid_bar_servicegoods.jpeg",plot=pp, path="../results/plots")
+```
+
+<br><br><br>
+
+***
+
+### 3. Are there specific trends in higher demand in certain seasons?
+
+> + By the plots we could observe that clothings were in higher demand in winter as expected.
+> + We could also observe that the demand in diapers are hiking in the winter season. However, in the question 2, there is a large amount of demand in diapers on January in 2018. However, we could not see the hiked demand in diapers in other years, thereby this could be considered either typos or outlier.
+> + In conclusion, there was no item that have higher demand in certain seasons.
+> + Four seasons were defined by 3 months each: Mar, Apr, and May as Spring; Jun, Jul, and Aug as Summer; Sep, Oct, and Nov as Fall; Dec, Jan, and Feb as Winter.
+> + Comparisons for contrasts of groups of interest were carried out using simultaneous tests for general linear hypotheses for Diapers and Clothings. It turned out that there is no significant between any contracts of groups.
+
+```{r fig.width = 8, fig.height = 8, fig.align = "center"}
+# Generate data to compare by seasons
+dat %>% 
+    mutate(YearMonth = strftime(Date, "%Y-%m")) %>%
+    group_by(YearMonth) %>%
+    summarise(BusTicket = mean(BusTicketCount, na.rm=T),
+              FoodProvided = mean(FoodProvided, na.rm=T),
+              Clothing = mean(Clothing, na.rm=T),
+              Diapers = mean(Diapers, na.rm=T),
+              SchoolKit = mean(SchoolKit, na.rm=T),
+              HygieneKit = mean(HygieneKit, na.rm=T)) %>%
+    reshape2::melt(., by = c("YearMonth")) %>%
+  mutate(Year = substr(YearMonth,1,4) %>% as.numeric)-> q3
+
+colnames(q3) <- c("YearMonth", "Category", "CaseNum","Year")
+
+q3 <- q3 %>% mutate(YMD = as.Date(paste0(q3$YearMonth, "-01")),
+                    Season = ifelse(month(YMD) >= 3 & month(YMD) <= 5, "Spring",
+                                    ifelse(month(YMD) >= 6 & month(YMD) <= 8, "Summer", 
+                                           ifelse(month(YMD) >= 9 & month(YMD) <= 11, "Fall", "Winter"))))
+q3$Season <- factor(q3$Season, level = c("Spring", "Summer", "Fall", "Winter"))
+
+# Define the four seasons by month:
+    # - Mar Apr May: Spring
+    # - Jun Jul Aug: Summer
+    # - Sep Oct Nov: Fall
+    # - Dec Jan Feb: Winter
+
+q3.1 <- q3 %>% 
+    group_by(Season,Category) %>% 
+    summarise(CaseNum = mean(CaseNum)) %>% 
+    arrange(Category) %>%
+    as.data.frame()
+
+p.q31 <- ggplot(dat = q3.1, aes(x = Season, y = CaseNum, group=Category, colour=Category)) +
+    geom_line() +
+    geom_point() +
+    labs(title = "Trend of Categories by Season", x="Season", y = "Number of Cases Filed", colour="Category") +
+    theme_bw() + scale_fill_brewer(palette="Set2") + 
+    theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold")) 
+ggsave("seasons_all.jpeg", path="../results/plots")
+
+
+p2.q31 <- ggplot(dat = q3.1, aes(x = Season, y = CaseNum, group=Category, colour=Category)) +
+    geom_line() +
+    geom_point() +
+    labs(title = "Trend of Categories by Season\n(Magnifying the bottom 0 to 3)", x="Season", y = "Number of Cases Filed", colour="Category") +
+    theme_bw() + scale_fill_brewer(palette="Set2") + 
+    theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold")) +
+    scale_y_continuous(limits = c(0, 3))
+ggsave("seasons_low.jpeg", path="../results/plots")
+
+p.q31
+```
+
+```{r fig.width = 8, fig.height = 4, fig.align = "center"}
+p2.q31
+```
+
+
+```{r}
+# Generate data to statistically compare Clothing, Diapers by season
+q3.2 <- q3 %>% 
+    group_by(Year,Season,Category) %>% 
+    summarise(CaseNum = mean(CaseNum)) %>% 
+    arrange(Category) %>%
+    as.data.frame()
+
+q3.21 <- q3.2 %>% filter(Category=="Clothing")
+q3.21 %>%
+  filter( !Year %in% names(which(table(q3.21$Year)<4))) -> q3.21
+
+
+# For Clothing, fsmry.by.grp is from a personal package `BTKR` which generates comparison tests and summaries
+res <- fsmry.by.grp(y = q3.21$CaseNum, grp = q3.21$Season)
+res$summary %>% add_rownames("Season") %>% regulartable() %>% autofit() %>% align(., align = "center", part = "body")
+res$pval.pairwise.comp %>% add_rownames("Season") %>% regulartable() %>% autofit() %>% align(., align = "center", part = "body")
+
+# Same for Diapers
+q3.22 <- q3.2 %>% filter(Category=="Diapers")
+q3.22 %>%
+  filter( !Year %in% names(which(table(q3.22$Year)<4))) -> q3.22
+
+res <- fsmry.by.grp(y = q3.22$CaseNum, grp = q3.22$Season)
+res$summary %>% add_rownames("Season") %>% regulartable() %>% autofit() %>% align(., align = "center", part = "body")
+res$pval.pairwise.comp %>% add_rownames("Season") %>% regulartable() %>% autofit() %>% align(., align = "center", part = "body")
+
+```
+
+<br><br><br>
+
+***
+
+### 4. Are there higher demand of support from the organization than before? Should the organization be prepared for more budget in order to support the future demands?
+
+> + We could identify that the number of clients (organizations) are getting more and increasing as time goes by. Thus, it demonstartes that more support and donation will be necessry in order to meet expected higher demand of support in the future.
+
+> + When it comes to financial support, it recorded the peak in mid 2000s. However, it is getting more and more decreasing. We could say that service/good support is increasing, while financial support is decreasing over time. Thus, the preparation for the future higher demand should be item-centric rather than monetary centric.
+
+
+```{r fig.width = 6, fig.align = "center", fig.height = 10}
+# Generate plots to show the trend of demand
+q4 <- dat %>% 
+    dplyr::select(Date, ClientFileNum, FinSupport) %>%
+    dplyr::mutate(Year = year(Date))
+
+q4p1 <- ggplot(q4, aes(x= Year, y = ClientFileNum, group = Year)) + theme_minimal() +
+    geom_bar(stat="identity", fill = brewer.pal(3, "Set2")[1]) + theme_bw() + 
+    labs(title = "Number of Cases Filed Over Time", x = "Year", y = "Number of Cases Filed") +
+    scale_fill_brewer(palette="Set2") + 
+    theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
+ggsave("casetrend.jpeg", path="../results/plots")
+
+q4p2 <- ggplot(q4, aes(x= Year, y = FinSupport, group = Year)) + theme_minimal() +
+    geom_bar(stat="identity", fill = brewer.pal(3, "Set2")[3]) + theme_bw() + 
+    labs(title = "Amount of Dollars in Financial Support Over Time", x = "Year", y = "Dollars") +
+    scale_fill_brewer(palette="Set2") + 
+    theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
+ggsave("financialsupport.jpeg", path="../results/plots")
+
+gridExtra::grid.arrange(q4p1, q4p2) -> ppp
+ppp
+
+ggsave("demandUMD.jpeg", plot=ppp, path="../results/plots")
+```
+
+<br><br><br>
+
+### Conclusion
+
++ Majority of clients do not have constant visitings. This can be either due to the service/goods provided or hopefully, they are no longer in need of help.
+ + Following up with the clients when visits are discontinued might help improve the service of UMD.
+
+<br><br><br>
+
+### Suggestion
+
+**1. Improved data entry/management system in need**
+
++ Too many NA and 0 values, and this makes it difficult for people to understand what homeless people needs.
++ For those who are in charge of entering the data, we could consider standardizing the data entry form.
++ For an updated form, it will be better if we could use drop-down menu as much as possible so that we could expect to prevent typos and missings.
+
+<br>
+
+**2. Item-centric rather than monetary-centric**
+
++ Identified that the monetary (financial) support were decreasing since mid 2000s, whereas the goods support are increasing over time.
++ Thus, it is important to understand (or predict) which items should be most in need for the clients in the future study.
+
+
+
+
+
