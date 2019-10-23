@@ -1,16 +1,3 @@
-library(dplyr)
-library(ggplot2)
-library(RColorBrewer)
-library(lubridate)
-library(zoo)
-library(BTKR)
-library(multcomp)
-library(flextable)
-library(summarytools)
-library(png)
-library(shiny)
-library(shinydashboard)
-
 source("helper_functions.R")
 
 ## app.R ##

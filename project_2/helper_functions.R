@@ -1,8 +1,15 @@
 dat <- read.csv("./data/processed_dat_UMD.csv")
-colnames(dat)[5] <- "Food_lbs"
 cols <- c("#49C8B1",	"#6A5878",	"#F4683E")
 varlist <- c("FoodProvided","Food_lbs","Clothing","Diapers","SchoolKit","HygieneKit")
 library(rlang)
+library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
+library(png)
+library(shiny)
+library(shinydashboard)
+library(units)
+library(zoo)
 
 # make a theme to remove the outer box
 blank_theme <- theme(
