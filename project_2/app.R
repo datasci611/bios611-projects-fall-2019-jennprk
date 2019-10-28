@@ -16,12 +16,27 @@ header <- dashboardHeader(
 
 sidebar <- dashboardSidebar(
   width = 480,
+
+  br(),  
+  
+  helpText('Urban Ministries of Durham (UMD) is a non-profit organization providing shelter, food, clothing, hygiene kits, and other services to people in needs
+           in Durham. This shiny dashboard aims to provide stakeholders of UMD
+           with tools to visualize the different services provided between 1999 and 2019.
+           The data set used in this dashboard is supplied by UMD.'),
+  
   # sidebarMenu(
-  #   # menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
-  #   # menuItemOutput("menuitem"),
-  #   sidebarSearchForm(textId = "searchText", buttonId = "searchButton",
-  #                     label = "Search...")
-  #   ),
+  #   menuItem("Introduction", tabName = "background", icon = icon("home"), id = "intro"),
+  #   menuItem("Goals", tabName = "goals", icon = icon("star"), id = "goals"),
+  #   menuItem("Data Source", tabName = "data", icon = icon("database"), id = "data"),
+  #   menuItem("Data Analysis", tabName = "analysis", icon = icon("chart-bar"), id = "analysis"),
+  #   menuItem("Question 1", tabName = "Question 1", icon = icon("chart-pie"), id = "p1"),
+  #   menuSubItem("p1", tabName = "Customers with Multiple visits"),
+  #   menuItem("Question 2", tabName = "Question 2", icon = icon("chart-line"), id = "p2"),
+  #   menuSubItem("p2", tabName = "Goods/Service Trends")
+  # ) ,
+  
+  # br(),  
+  
   sliderInput(inputId = "slider", h3("Years of visits"), min=1,max=20, value=3),
   selectInput(inputId = "select", h3("Goods & Services"),
               choices=c("FoodProvided","Food(lbs)","Clothing","Diapers","SchoolKit","HygieneKit"))
@@ -30,6 +45,14 @@ sidebar <- dashboardSidebar(
 body <- dashboardBody(
   fluidPage(
     tabsetPanel(
+      # output$value1 <- renderValueBox({
+      #   valueBox(
+      #     formatC(sales.account$value, format="d", big.mark=',')
+      #     ,paste('Top Account:',sales.account$Account)
+      #     ,icon = icon("stats",lib='glyphicon')
+      #     ,color = "purple")  
+      # })
+      
       tabPanel("Plot", 
                plotOutput(outputId = "piechart"),
                plotOutput(outputId = "trendbar"),
