@@ -16,14 +16,13 @@ header <- dashboardHeader(
 
 sidebar <- dashboardSidebar(
   width = 480,
-  sidebarMenu(
-    # menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
-    # menuItemOutput("menuitem"),
-    sidebarSearchForm(textId = "searchText", buttonId = "searchButton",
-                      label = "Search...")
-    ),
-  sliderInput(inputId = "slider", h3("Years of visits"),
-              min=1,max=20, value=3),
+  # sidebarMenu(
+  #   # menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+  #   # menuItemOutput("menuitem"),
+  #   sidebarSearchForm(textId = "searchText", buttonId = "searchButton",
+  #                     label = "Search...")
+  #   ),
+  sliderInput(inputId = "slider", h3("Years of visits"), min=1,max=20, value=3),
   selectInput(inputId = "select", h3("Goods & Services"),
               choices=c("FoodProvided","Food(lbs)","Clothing","Diapers","SchoolKit","HygieneKit"))
 )
@@ -73,14 +72,9 @@ server <- function(input, output,session) {
   output$q4 <- renderPlot({
     q4.func(dat)
   })
-  # output$image1 <- renderImage({
-  #     return(list(
-  #       src = "umd.png",
-  #       contentType = "image/png",
-  #       alt = "image1"
-  #     ))
-  #   } , deleteFile = FALSE)
+
 }
 
 shinyApp(ui, server)
+
 

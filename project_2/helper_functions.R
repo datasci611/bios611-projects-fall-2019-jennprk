@@ -10,6 +10,10 @@ library(shiny)
 library(shinydashboard)
 library(units)
 library(zoo)
+library(lubridate)
+library(multcomp)
+library(flextable)
+library(summarytools) 
 
 # make a theme to remove the outer box
 blank_theme <- theme(
