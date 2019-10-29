@@ -257,7 +257,7 @@ q6.func <- function(data=dat, newyear, compareyear) {
     arrange(Year)
   
   lmr <- lm(data=q6, cnt ~ Year)
-  predcnt <- round(lmr$coefficients[2]*yr + lmr$coefficients[1])
+  predcnt <- round(lmr$coefficients[2]*newyear + lmr$coefficients[1])
   
   if (q6[q6$Year==compareyear,2]==0) {
     result <- paste0("Increase rate in demand of service cannot be calculated due to missing information in year ", compareyear) 
