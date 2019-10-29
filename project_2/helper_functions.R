@@ -1,5 +1,5 @@
 dat <- read.csv("./data/processed_dat_UMD.csv")
-cols <- c("#49C8B1",	"#6A5878",	"#F4683E")
+cols <- c("#49C8B1",	"#6A5878",	"#F4683E") #Generate colors from UMD logo
 varlist <- c("FoodProvided","Food_lbs","Clothing","Diapers","SchoolKit","HygieneKit")
 
 library(rlang)
@@ -17,6 +17,7 @@ library(flextable)
 library(summarytools) 
 library(plotly)
 
+# Function to change numbers to words
 numtostr <- function(num) {
   ifelse(num==1,"one",
    ifelse(num==2,"two",
@@ -197,8 +198,9 @@ q4.func <- function(data=dat, yr) {
     dplyr::select(Date, ClientFileNum, FinSupport) %>%
     dplyr::mutate(Year = year(Date)) %>%
     group_by(Year) %>%
-    summarise(cnt = n()) 
+    summarise(cnt = n())  # Generate the number of serivce provided in each year
   
+  # Geneate barplot with number of service provided over the years
   q4p1 <- ggplot(q4, aes(x= Year, y = cnt))+
     geom_bar(stat="identity", fill = cols[1]) + 
     theme_bw() + 
@@ -207,31 +209,25 @@ q4.func <- function(data=dat, yr) {
     scale_fill_brewer(palette="Set2") + 
     theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
 
-  # q4p2 <- ggplot(q4, aes(x= Year, y = FinSupport, group = Year)) + theme_minimal() +
-  #   geom_bar(stat="identity", fill = brewer.pal(3, "Set2")[3]) + theme_bw() + 
-  #   labs(title = "Amount of Dollars in Financial Support Over Time", x = "Year", y = "Dollars") +
-  #   scale_fill_brewer(palette="Set2") + 
-  #   theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
-
-  # gridExtra::grid.arrange(q4p1, q4p2) -> ppp
-  # ppp
-  
   q4p1
 }
 
 ## q5
 q5.func <- function(data=dat, date) {
   
+  # Same as q4
   q5 <- data %>%
     dplyr::select(Date, ClientFileNum, FinSupport) %>%
     dplyr::mutate(Year = year(Date)) %>%
     group_by(Year,.drop = FALSE) %>%
     summarise(cnt = n())
     
+  # Add rows for years that have 0 counts
   q5 <- q5 %>%
-    add_row(Year=setdiff(1990:2019, q5$Year), cnt=rep(0,length(setdiff(1990:2019, q5$Year)))) %>%
+    add_row(Year=setdiff(1990:2019, q5$Year), cnt=rep(0,length(setdiff(1990:2019, q5$Year)))) %>% #find the years that do not have counts and add rows
     arrange(Year)
   
+  # Calculate the increase rate
   if (q5[q5$Year==date[1],2]==0) {
     result <- paste0("Increase rate in demand of service cannot be calculated due to missing information in year ", date[1]) 
     
@@ -244,7 +240,9 @@ q5.func <- function(data=dat, date) {
   print(result)
 }
 
+## q6
 q6.func <- function(data=dat, newyear, compareyear) {
+  # Same as q5, but remove 2019 since we do not have entire information of that year
   q6 <- data %>%
     dplyr::select(Date, ClientFileNum, FinSupport) %>%
     dplyr::mutate(Year = year(Date)) %>%
@@ -256,9 +254,11 @@ q6.func <- function(data=dat, newyear, compareyear) {
     add_row(Year=setdiff(1990:2018, q6$Year), cnt=rep(0,length(setdiff(1990:2018, q6$Year)))) %>%
     arrange(Year)
   
+  # Run a linear model to find estimate of service demand of future years
   lmr <- lm(data=q6, cnt ~ Year)
   predcnt <- round(lmr$coefficients[2]*newyear + lmr$coefficients[1])
   
+  # Calculate the increase rate
   if (q6[q6$Year==compareyear,2]==0) {
     result <- paste0("Increase rate in demand of service cannot be calculated due to missing information in year ", compareyear) 
   } else {
