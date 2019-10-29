@@ -1,8 +1,14 @@
 # Project2
 ## Interactive Shiny Dashboard for Urban Ministries of Durham
 #### Ji-Eun park
+#### shinyapp link: https://ji-eun-park.shinyapps.io/project_2/
+
 
 ### Project Aim
+
+**Urban Ministries of Durham (UMD)** is the organization that provides food, clothing, shelter and supportive services to our neighbors in need. They have been serving communities around in order to carry out this mission while providing a welcoming, caring and compassionate environment that affirms the dignity of our guests, volunteers and staff.
+
+UMD was developed and is partially supported by a diverse group: many individuals, foundations, corporations, and government. In particular, their main services include food, shelter, clothing and supportive services for over 6,000 men, women and children annually.
 
 This project aims to help the Urban Ministires of Durham (UMD) to have better understanding of the organization's operation by being able to check trends of their service/goods provided. This project will be based on the questions answered from the previous project (Project 1). 
 

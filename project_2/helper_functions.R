@@ -1,6 +1,7 @@
 dat <- read.csv("./data/processed_dat_UMD.csv")
 cols <- c("#49C8B1",	"#6A5878",	"#F4683E")
 varlist <- c("FoodProvided","Food_lbs","Clothing","Diapers","SchoolKit","HygieneKit")
+
 library(rlang)
 library(tidyverse)
 library(ggplot2)
@@ -14,6 +15,31 @@ library(lubridate)
 library(multcomp)
 library(flextable)
 library(summarytools) 
+library(plotly)
+
+numtostr <- function(num) {
+  ifelse(num==1,"one",
+   ifelse(num==2,"two",
+     ifelse(num==3,"three",
+      ifelse(num==4,"four",
+       ifelse(num==5,"five",
+        ifelse(num==6,"six",
+         ifelse(num==7,"seven",
+          ifelse(num==8,"eight",
+           ifelse(num==9,"nine",
+            ifelse(num==10,"ten",
+             ifelse(num==11,"eleven",
+              ifelse(num==12,"twelve",
+               ifelse(num==13,"thirteen",
+                ifelse(num==14,"fourteen",
+                 ifelse(num==15,"fifteen",
+                  ifelse(num==16,"sixteen",
+                   ifelse(num==17,"seventeen",
+                    ifelse(num==18,"eighteen",
+                     ifelse(num==19,"nineteen",
+                      ifelse(num==20,"twenty", NULL))))
+                         ))))))))))))))))
+}
 
 # make a theme to remove the outer box
 blank_theme <- theme(
@@ -43,11 +69,12 @@ pie.func <- function(data=dat,visits=3) {
   bp <- ggplot(ead.1, aes(x="",y=p, fill=freq))+
     geom_bar(width = 1, stat = "identity") +
     theme_bw() +
-    labs(title="Proportion of Number of\n Visit Years per Client") +
-    scale_fill_manual(name = "Number of Visiting Years", 
+    # labs(title=paste0("Proportion of Clients with \nmore than ", numtostr(visits), " visits")) +
+    scale_fill_manual(name = "Number of Visited Years", 
                       labels = c(paste0("more than ",visits," visits"),
-                                 paste0("<=",visits," visits")),
-                      values = cols[c(3, 2)])
+                                 paste0("less or equal to ",visits," visits")),
+                      values = cols[c(3, 2)]) +
+    theme(legend.position="bottom")
   
   # Geneate into pie chart
   pie <- bp + 
@@ -61,8 +88,46 @@ pie.func <- function(data=dat,visits=3) {
   return(pie)
 }
 
-# Recent Higher demand
+# Q2) Recent Higher demand
 trendbar.func <- function(data=dat, variable) {
+  set.seed(1)
+  colpal <- brewer.pal(6, "Set2")
+  if (variable=="Food(lbs)") {
+    actvar <- "Food_lbs"
+    varname <- "Food Amount"
+    varlab <- "Food (lbs)"
+    colsel <- colpal[1]
+  } else if (variable=="Food Provided") {
+    actvar <- "FoodProvided"
+    varname <- "Food Provided Incidence"
+    varlab <- "Food Provided(#)"
+    colsel <- colpal[2]
+  } else if (variable=="School Kit") {
+    actvar <- "SchoolKit"
+    varname <- "School Kit" 
+    varlab <- "School Kit(#)"
+    colsel <- colpal[3]
+  } else if (variable=="Hygiene Kit") {
+    actvar <- "HygieneKit"
+    varname <- "Hygiene Kit"
+    varlab <- "Hygiene Kit(#)"
+    colsel <- colpal[4]
+  } else if (variable=="Clothing") {
+    actvar <- variable
+    varname <- variable
+    varlab <- paste0(variable, "(#)")
+    colsel <- colpal[5]
+  } else if (variable=="Diapers"){
+    actvar <- variable
+    varname <- variable
+    varlab <- paste0(variable, "(#)")
+    colsel <- colpal[6]
+  } else {
+    actvar <- variable
+    varname <- variable
+    varlab <- paste0(variable, "(#)")
+    colsel <- colpal[6]
+  }
   
   dat <- data %>% arrange(Date) # Order the dataset by time order
   dat.2 <- dat %>% dplyr::select(4:11) # select only goods/services and years
@@ -70,37 +135,20 @@ trendbar.func <- function(data=dat, variable) {
   
   q2 <- dat.2 %>% 
     group_by(Year) %>%
-    summarise(average = mean(!!sym(variable)))
+    summarise(average = mean(!!sym(actvar)))
   
-  if (variable=="Food_lbs") {
-    varname <- "Food Amount"
-    varlab <- "Food (lbs)"
-  } else if (variable=="FoodProvided") {
-    varname <- "Food Provided Incidence"
-    varlab <- "Food Provided(#)"
-  } else if (variable=="SchoolKit") {
-    varname <- "School Kit" 
-    varlab <- "School Kit(#)"
-  } else if (variable=="HygieneKit") {
-    varname <- "Hygiene Kit"
-    varlab <- "Hygiene Kit(#)"
-  } else {
-    varname <- variable
-    varlab <- paste0(variable, "(#)")
-    }
-  
-  ggplot(dat=q2, aes(x=Year, y=average, fill=cols[1])) +
+  ggplot(dat=q2, aes(x=Year, y=average, fill=colsel)) +
     geom_bar(stat="identity") +
-    labs(title=paste0("Average ", varname, " by Year"), x="Year",y=variable) +
+    labs(title=paste0("Average ", varname, " by Year"), x="Year",y= variable) +
     theme_bw() + 
-    scale_fill_manual(name = "", labels = varlab, values=cols[1]) +
+    scale_fill_manual(name = "", labels = varlab, values=colsel) +
     theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold")) +
     theme(axis.text.x = element_text(angle = 60)) -> pFp
 
   return(pFp)
 }
 
-##
+# Q3) 
 q3.func <- function(data=dat) { 
   data %>% 
     mutate(YearMonth = strftime(Date, "%Y-%m")) %>%
@@ -137,30 +185,88 @@ q3.func <- function(data=dat) {
   ggplot(dat = q3.1, aes(x = Season, y = CaseNum, group=Category, colour=Category)) +
     geom_line() +
     geom_point() +
-    labs(title = "Trend of Categories by Season", x="Season", y = "Number of Cases Filed", colour="Category") +
+    labs(title = "Trend of Categories by Season", x="Season", y = "Average Number of Cases Filed (per year)", colour="Category") +
     theme_bw() + scale_fill_brewer(palette="Set2") + 
     theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold")) 
 }
 
 
 ## q4
-q4.func <- function(data) {
+q4.func <- function(data=dat, yr) {
   q4 <- data %>% 
     dplyr::select(Date, ClientFileNum, FinSupport) %>%
-    dplyr::mutate(Year = year(Date))
+    dplyr::mutate(Year = year(Date)) %>%
+    group_by(Year) %>%
+    summarise(cnt = n()) 
   
-  q4p1 <- ggplot(q4, aes(x= Year, y = ClientFileNum, group = Year)) + theme_minimal() +
-    geom_bar(stat="identity", fill = brewer.pal(3, "Set2")[1]) + theme_bw() + 
+  q4p1 <- ggplot(q4, aes(x= Year, y = cnt))+
+    geom_bar(stat="identity", fill = cols[1]) + 
+    theme_bw() + 
+    geom_vline(xintercept = yr, color="red") +
     labs(title = "Number of Cases Filed Over Time", x = "Year", y = "Number of Cases Filed") +
     scale_fill_brewer(palette="Set2") + 
     theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
 
-  q4p2 <- ggplot(q4, aes(x= Year, y = FinSupport, group = Year)) + theme_minimal() +
-    geom_bar(stat="identity", fill = brewer.pal(3, "Set2")[3]) + theme_bw() + 
-    labs(title = "Amount of Dollars in Financial Support Over Time", x = "Year", y = "Dollars") +
-    scale_fill_brewer(palette="Set2") + 
-    theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
+  # q4p2 <- ggplot(q4, aes(x= Year, y = FinSupport, group = Year)) + theme_minimal() +
+  #   geom_bar(stat="identity", fill = brewer.pal(3, "Set2")[3]) + theme_bw() + 
+  #   labs(title = "Amount of Dollars in Financial Support Over Time", x = "Year", y = "Dollars") +
+  #   scale_fill_brewer(palette="Set2") + 
+  #   theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
 
-  gridExtra::grid.arrange(q4p1, q4p2) -> ppp
-  ppp
+  # gridExtra::grid.arrange(q4p1, q4p2) -> ppp
+  # ppp
+  
+  q4p1
 }
+
+## q5
+q5.func <- function(data=dat, date) {
+  
+  q5 <- data %>%
+    dplyr::select(Date, ClientFileNum, FinSupport) %>%
+    dplyr::mutate(Year = year(Date)) %>%
+    group_by(Year,.drop = FALSE) %>%
+    summarise(cnt = n())
+    
+  q5 <- q5 %>%
+    add_row(Year=setdiff(1990:2019, q5$Year), cnt=rep(0,length(setdiff(1990:2019, q5$Year)))) %>%
+    arrange(Year)
+  
+  if (q5[q5$Year==date[1],2]==0) {
+    result <- paste0("Increase rate in demand of service cannot be calculated due to missing information in year ", date[1]) 
+    
+  } else {
+    rate <- ((q5[which(q5$Year==date[2]),2] - q5[which(q5$Year==date[1]),2])/q5[q5$Year==date[1],2]) %>% round(3)
+    rate <- as.numeric(rate)
+    result<- paste0("Demand for service from UMD has increased by ", rate, " times from ", date[1], " to ", date[2],".")
+  }
+  
+  print(result)
+}
+
+q6.func <- function(data=dat, newyear, compareyear) {
+  q6 <- data %>%
+    dplyr::select(Date, ClientFileNum, FinSupport) %>%
+    dplyr::mutate(Year = year(Date)) %>%
+    group_by(Year,.drop = FALSE) %>%
+    summarise(cnt = n()) %>%
+    filter(Year!=2019)
+  
+  q6 <- q6 %>%
+    add_row(Year=setdiff(1990:2018, q6$Year), cnt=rep(0,length(setdiff(1990:2018, q6$Year)))) %>%
+    arrange(Year)
+  
+  lmr <- lm(data=q6, cnt ~ Year)
+  predcnt <- round(lmr$coefficients[2]*yr + lmr$coefficients[1])
+  
+  if (q6[q6$Year==compareyear,2]==0) {
+    result <- paste0("Increase rate in demand of service cannot be calculated due to missing information in year ", compareyear) 
+  } else {
+    rate <- ((predcnt - q6[which(q6$Year==compareyear),2])/q6[q6$Year==compareyear,2]) %>% round(3)
+    rate <- as.numeric(rate)
+    result <- paste0("Demand for service from UMD is expected to be ", rate, " times of ", compareyear, " in ", newyear,".")
+  }
+  
+  return(list(predcnt, result))
+}
+
