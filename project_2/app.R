@@ -183,4 +183,5 @@ server <- function(input, output,session) {
 
 # Run shiny app
 shinyApp(ui, server)
+# rsconnect::deployApp("/Users/jieun/github_updated/bios611-projects-fall-2019-jennprk/project_2")
 
