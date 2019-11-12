@@ -1,0 +1,36 @@
+---
+title: "Untitled"
+author: "Ji-Eun Park"
+date: "11/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+path <- "/Users/jieun/Downloads/datasci611-gh-pages-4/data/project2_2019"
+files <- list.files(path)
+
+for (i in 1:length(files)) {
+  name <- substr(files[i],1,nchar(files[i])-4)
+  assign(name, data.table::fread(file=paste0(path,"/",files[i])))
+}
+rm(i,name,path,files)
+```
+
+## Choose Variables
+
+```{r}
+datasets <- ls()
+
+varnames <- function(i) {
+  get(datasets[i]) %>% colnames()
+}
+
+lapply(1:16, function(x) varnames(x)) %>% unlist() %>% unique()
+
+```
+
