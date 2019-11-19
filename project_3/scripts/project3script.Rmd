@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Project 3 - Statistics and Visualization"
 author: "Ji-Eun Park"
 date: "11/11/2019"
 output: html_document
@@ -32,5 +32,15 @@ varnames <- function(i) {
 
 lapply(1:16, function(x) varnames(x)) %>% unlist() %>% unique()
 
+```
+
+```{r}
+a = read.csv("../data/client2.csv")[,-1]
+b = read.csv("../data/incomeEntry2.csv")[,-1]
+c = read.csv("../data/incomeExit2.csv")[,-1]
+d = read.csv("../data/HIEntry2.csv")[,-1]
+e = read.csv("../data/HIExit2.csv")[,-1]
+f = read.csv("../data/DisEntry2.csv")[,-1]
+g = read.csv("../data/DisExit2.csv")[,-1]
 ```
 
