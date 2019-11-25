@@ -1,13 +1,37 @@
 Provide feedback about the following topics:
 
 1. Is the project organized modularly, with Make as the workflow manager?
+I think the makefile is still in process, but the project includes the makefile which seems to be more organized in the end. One thing noticed is that the makefile has a .txt extension, which I believe should be removed!
+
 2. Does the project use both Python (Pandas specifically) and R (Tidyverse specifically) scripts?
+Currently, the project only includes R scripts. The project was asked to perform data wrangling on Pandas, so hope you don't forget to do so!
+
 3. Is Docker used to define execution environments appropriately?
+Docker file is not made yet, so I cannot say if it is appropriately defined.
+
 4. Are the plots appropriate for the data types, the hypotheses being tested, and the points being communicated?
+The plot on the most common disability among UMD were shown with a bar plot which is appropriate. Good start!
+
 5. How can the project be organized or documented more clearly?
+The project is still in process, but in the end, I think we should have a makefile with the overall workflow, docker files to construct the environment for Python and R. 
+
 6. Is the purpose of the project communicated clearly?
+Yes, the objective of the project was stated in the README.md file stating "Using the data provided by UM, I hope to provide meaningful insight into the services they provide have changed over time, as well as how their services are being utilized currently." In the end, I would expect more detailed questions in the report.
+
 7. Does the purpose of the project make sense from the client’s point of view? How could the project better serve the client?
+Yes, the purpose of the project is to provide more insights into the service for UMD. More detailed questions and results found or the questions asked by the clients will help better serve UMD.
+
 8. Is the source of the data made clear? (Remember that this project can be part of your public portfolios, so people not familiar with UMD may see it).
+Although the README file has the introduction of UM(D), it does not include where the datasets used were originated from. Stating that the UMD provided the datasets will make it more clear.
+
 9. Is the interpretation of figures clearly explained?
+Yes, it had an explanation about the barplot in the Rscript/html. Looks like a good start!
+
 10. Is the purpose and interpretation of analysis steps clearly communicated?
+Although it seems pretty clear for now, I think it would be better to have more comments in the scripts to explain the purpose and interpretation of analyses.
+
 11. Are overall take-home messages clearly communicated?
+Taking into consideration that the work is still in process, I would say it's in a good starting point. Adding more explanations and figures will definitely make the take-home messages clear in the end. Good luck!
+
+
+

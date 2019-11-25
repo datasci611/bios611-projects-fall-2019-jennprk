@@ -30,7 +30,7 @@ Yes, the report states that the data were from the shelter side of UMD and has a
 Yes, there were clear interpretations for each figures presented in the report, and seems to be in the process of finishing it. Looks like a good start!
 
 10. Is the purpose and interpretation of analysis steps clearly communicated?
-So far, the figures generated were based on the characteristics, and it seems to be done well.
+So far, the figures generated were based on the characteristics, and it seems to be done well. To improve the communication of the analysis, I would add some more comments in the scripts to help the readers to understand what is happening in each step of the analysis.
 
 11. Are overall take-home messages clearly communicated?
 Although it is still in process, I can see from the given objectives and figures that the take-home message will be clearly provided in the end. Keep up the good work! I look forward to see the final report and presentation.

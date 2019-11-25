@@ -1,13 +1,34 @@
 Provide feedback about the following topics:
 
 1. Is the project organized modularly, with Make as the workflow manager?
+Project3 repo was not set, and cannot feedback is unavailable.
+
 2. Does the project use both Python (Pandas specifically) and R (Tidyverse specifically) scripts?
+Project3 repo was not set, and cannot feedback is unavailable.
+
 3. Is Docker used to define execution environments appropriately?
+Project3 repo was not set, and cannot feedback is unavailable.
+
 4. Are the plots appropriate for the data types, the hypotheses being tested, and the points being communicated?
+Project3 repo was not set, and cannot feedback is unavailable.
+
 5. How can the project be organized or documented more clearly?
+Project3 repo was not set, and cannot feedback is unavailable.
+
 6. Is the purpose of the project communicated clearly?
+Project3 repo was not set, and cannot feedback is unavailable.
+
 7. Does the purpose of the project make sense from the client’s point of view? How could the project better serve the client?
+Project3 repo was not set, and cannot feedback is unavailable.
+
 8. Is the source of the data made clear? (Remember that this project can be part of your public portfolios, so people not familiar with UMD may see it).
+Project3 repo was not set, and cannot feedback is unavailable.
+
 9. Is the interpretation of figures clearly explained?
+Project3 repo was not set, and cannot feedback is unavailable.
+
 10. Is the purpose and interpretation of analysis steps clearly communicated?
+Project3 repo was not set, and cannot feedback is unavailable.
+
 11. Are overall take-home messages clearly communicated?
+Project3 repo was not set, and cannot feedback is unavailable.
