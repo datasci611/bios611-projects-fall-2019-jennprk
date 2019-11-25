@@ -1,0 +1,40 @@
+Provide feedback about the following topics:
+
+1. Is the project organized modularly, with Make as the workflow manager?
+The project contains a proper Makefile and Dockerfile as the workflow manager. It includes all appropriate steps running all Python and R scripts to generate the final html file.
+
+2. Does the project use both Python (Pandas specifically) and R (Tidyverse specifically) scripts?
+Yes, he/she used python to wrangle the data for analysis in python using Pandas and R to generate plots using tidyverse. Great work on distributing to both programs! And great plots!
+
+
+3. Is Docker used to define execution environments appropriately?
+Yes, the execution environments were well defined in the docker file for both R and python.
+
+4. Are the plots appropriate for the data types, the hypotheses being tested, and the points being communicated?
+The plots were appropriate for each data types and analysis. Client characteristics and their distribution could be nicely seen by pie charts and stacked bar plots.
+
+5. How can the project be organized or documented more clearly?
+I think overall the project is organized and documented amazingly. One suggestion I would make is for the "Percent Distribution of Living Situation Prior to Entry" has a lot of subgroups, which I think might be more clearer to have the subgroups with lower percentage to be grouped together so that it is more clearer, or maybe change the order of the subgroups so that we can see the groups with higher percentage more clearly.
+
+
+6. Is the purpose of the project communicated clearly?
+Yes, the objective of the project was stated clearly on the beginning of the report.
+
+7. Does the purpose of the project make sense from the client’s point of view? How could the project better serve the client?
+I think the questions aimed to be answered will be useful for UMD. For UMD, I think it is important for them to know about the clients (their background and characteristics) and help determine how to provide help more efficiently and broadly. By analyzing the objectives given, I think it would help UMD to have better understanding and come up with a better plan.
+
+8. Is the source of the data made clear? (Remember that this project can be part of your public portfolios, so people not familiar with UMD may see it).
+Yes, the report states that the data were from the shelter side of UMD and has a introduction about who UMD is and what they do.
+
+9. Is the interpretation of figures clearly explained?
+Yes, there were clear interpretations for each figures presented in the report, and seems to be in the process of finishing it. Looks like a good start!
+
+10. Is the purpose and interpretation of analysis steps clearly communicated?
+So far, the figures generated were based on the characteristics, and it seems to be done well.
+
+11. Are overall take-home messages clearly communicated?
+Although it is still in process, I can see from the given objectives and figures that the take-home message will be clearly provided in the end. Keep up the good work! I look forward to see the final report and presentation.
+
+
+
+
