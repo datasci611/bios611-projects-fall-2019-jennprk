@@ -6,64 +6,356 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
 library(tidyverse)
+library(RColorBrewer)
 ```
 
 ```{r}
-path <- "/Users/jieun/Downloads/datasci611-gh-pages-4/data/project2_2019"
-files <- list.files(path)
-
-for (i in 1:length(files)) {
-  name <- substr(files[i],1,nchar(files[i])-4)
-  assign(name, data.table::fread(file=paste0(path,"/",files[i])))
-}
-rm(i,name,path,files)
+dat = read.csv("/Users/jieun/github_updated/bios611-projects-fall-2019-jennprk/project_3/data/final.csv")[,-1]
 ```
 
-## Choose Variables
 
-```{r}
-datasets <- ls()
-
-varnames <- function(i) {
-  get(datasets[i]) %>% colnames()
-}
-
-lapply(1:16, function(x) varnames(x)) %>% unlist() %>% unique()
-
-```
-
-```{r}
-a = read.csv("../data/client2.csv")[,-1]
-b = read.csv("../data/incomeEntry2.csv")[,-1]
-c = read.csv("../data/incomeExit2.csv")[,-1]
-d = read.csv("../data/HIEntry2.csv")[,-1]
-e = read.csv("../data/HIExit2.csv")[,-1]
-f = read.csv("../data/DisEntry2.csv")[,-1]
-g = read.csv("../data/DisExit2.csv")[,-1]
-
-dat <- left_join(a,b)
-dat <- left_join(dat,c) %>% select(-index)
-dat <- left_join(dat,d) %>% select(-index)
-dat <- left_join(dat,e) %>% select(-index)
-dat <- left_join(dat,f) %>% select(-index)
-```
-
-### Background
+## Background
 **Urban Ministries of Durham (UMD)** is a non-profit organization offering food, shelter and other services necessary for people in need of those aids. This project is designed to bring meaningful insights from the supply data gathered since around 1990's which is almost since the foundation of this organization (1983). 
 
-### Project Goal
+## Project Goal
 The aim of this project is to provide UMD with useful and invaluable information about the organization and the clients and provide analytic information and suggest insightful ideas for UMD.
 
-### Data
-UMD has provided 16 datasets including such as client/provider information, disability at enty/exit, health insurance at entry/exit, income at entry/exit, noncash support received entry/exit, etc. 
+## Data
+UMD has provided 16 datasets including such as client/provider information, disability at entry/exit, health insurance at entry/exit, income at entry/exit, noncash support received entry/exit, etc. 
 
-### Questions of Interest
-**Questions may change in final report**
-1. Determine the demographics of UMD clients. What is the distribution of the clients by race, age groups, gender, race, etc?
+## Analysis Results
 
-2. How did the income and non-cash support change from entry to exit? Were there any improvements?
+### 1. Demographics of UMD clients
+
+#### Race and Ethnicity
+
+```{r}
+# Race
+## Select demographical variables from data
+dat %>% 
+  select(ClientID, AgeEntry, AgeExit, Gender, Race, Ethnicity, Veteran) -> dat1
+
+dat1 <- unique(dat1) # Remove duplicates
+
+# Since some clients returned couple of times, take the data from first visit
+dat1 <- dat1 %>% 
+  group_by(ClientID) %>%
+  arrange(AgeEntry) %>%
+  filter(row_number()==1)
+
+## Generate variable vector arranged by the number of clients in each race group
+table(dat1$Race) %>%
+  data.frame() %>%
+  arrange(Freq) %>%
+  select(Var1) %>%
+  as.matrix() %>% as.vector() -> vars
+
+## Generate dataset to plot race distribution
+dat1 %>%
+  mutate(Race = factor(Race,levels=vars)) -> dat1.1
+
+## Generate horizontal bar plot on race
+dat1.1 %>%
+  select(Race) %>%
+  ggplot(aes(x=Race)) +
+  geom_bar(fill="#f37735") +
+  scale_y_continuous(limits=c(0,2500)) +
+  coord_flip() +
+  labs(title="Distribution of Clients' Race") +
+  theme_bw() -> race.p
+
+# Ethnicity
+## Generate variable vector arranged by the number of clients in each ethnicity group
+table(dat1$Ethnicity) %>%
+  data.frame() %>%
+  arrange(Freq) %>%
+  select(Var1) %>%
+  as.matrix() %>% as.vector() -> vars
+
+## Generate dataset to plot ethnicity distribution
+dat1 %>%
+  mutate(Ethnicity = factor(Ethnicity,levels=vars)) -> dat1.2
+
+## Generate horizontal bar plot on ethnicity
+dat1.2 %>%
+  select(Ethnicity) %>%
+  ggplot(aes(x=Ethnicity)) +
+  geom_bar(fill="#ffc425") +
+  scale_y_continuous(limits=c(0,2500)) +
+  coord_flip() +
+  labs(title="Distribution of Clients' Ethnicity") +
+  theme_bw() -> ethnicity.p
+
+## plot the two plots in one grid
+cowplot::plot_grid(race.p, ethnicity.p, nrow=2, align="v")
+```
+
+As you can see in the plots, majority of UMD's clients are Black or  African American, or white. From ACS (American Community Survey) data collected in 2019, the racial composition of Durham is: White(47.96%), Black or African American(39.65%), Asian(5.18%), Native American (0.25%), Native Hawaiian or Pacific Islander (0.05%). Considering this fact, we can see that there is a very high ratio of Black/African American clients. 
+
+(reference: http://worldpopulationreview.com/us-cities/durham-population/)
+
+### Age Groups
+
+```{r}
+# Generate new variable with age groups for each client
+dat1 <- dat1 %>% 
+  mutate(AgeGroup = ifelse(AgeEntry<20,"10s",ifelse(AgeEntry<30,"20s",ifelse(AgeEntry<40, "30s",ifelse(AgeEntry<50, "40s",ifelse(AgeEntry<60,"50s",ifelse(AgeEntry<70, "60s",ifelse(AgeEntry<80,"70s",ifelse(AgeEntry<90,"80s","90s"))))))))) 
+```
+
+```{r}
+# Bar plot for Age groups of clients at Entry
+dat1 %>%
+  select(AgeGroup) %>%
+  ggplot(aes(x=AgeGroup)) +
+  geom_bar(fill="maroon") +
+  labs(title="Distribution of Clients' Age Groups at Entry") +
+  theme_bw()
+```
+
+Results show that majority of the clients are in their 20s to 50s, where 40-50s have the highest proportion. 
+
+#### Gender
+
+```{r}
+# generate the number of clients in each gender status
+dat1 %>%
+  group_by(Gender) %>%
+  count(Gender) -> gendercount # count 
+
+# generate the proportion of each gender status
+gendercount$prop <- round(gendercount$n / sum(gendercount$n),3) *100
+
+# generate the coordiate for each gender status
+gendercount <- gendercount %>%
+  arrange(desc(Gender)) %>%
+  mutate(lab.ypos = cumsum(prop) - 0.5*prop)
+
+# pie chart for distribution of client gender
+gendercount %>%
+  ggplot(aes(x=1,y=prop, fill=Gender)) +
+  geom_col() +
+  geom_text(aes(label=prop), position = position_stack(vjust=0.5), color="white") +
+  coord_polar(theta="y") +
+  scale_fill_manual(values=brewer.pal(7, "Dark2")[c(5,6,7)]) +
+  labs(title="Distribution of Clients's Gender") +
+  theme_void()
+```
+
+You can see that the clients at UMD have 72% male clients and 28% female clients. Very minor, but there also exists some MTF clients. 
+
+
+#### Veteran Status
+
+```{r}
+# Change the levl of the Veterans so that it can be displayed as expected
+dat1 %>%
+  mutate(Veteran = factor(Veteran, levels=c("Yes","No","Data not collected"))) -> dat1
+
+# generate the number of clients in each veteran status
+dat1 %>%
+  group_by(Veteran) %>%
+  count(Veteran) -> veterancount # count 
+
+# generate the proportion of each veteran status
+veterancount$prop <- round(veterancount$n / sum(veterancount$n),3) *100
+
+# generate the coordiate for each veteran status
+veterancount <- veterancount %>%
+  arrange(desc(Veteran)) %>%
+  mutate(lab.ypos = cumsum(prop) - 0.5*prop)
+
+# pie chart for distribution of client gender
+veterancount %>%
+  ggplot(aes(x=1,y=prop, fill=Veteran)) +
+  geom_col() +
+  geom_text(aes(label=prop), position = position_stack(vjust=0.5), color="white") +
+  coord_polar(theta="y") +
+  scale_fill_manual(values=brewer.pal(3, "Dark2")[c(1, 3,2)]) +
+  labs(title="Distribution of Clients' Veteran status") +
+  theme_void()
+```
+
+12.3% of the clients are veterans.
+
+
+###  How did the income and non-cash support change from entry to exit? Were there any improvements?
+
+```{r}
+dat %>%
+  select(ClientID, IncomeEntry, IncomeExit, ReceivingBenefitEntry, ReceivingBenefitExit) -> dat2
+
+dat2 %>%
+  mutate(IncomeEntry = ifelse(IncomeEntry=="Yes","Yes","No"),
+         IncomeExit = ifelse(IncomeExit=="Yes","Yes","No"),
+         NoncashEntry = ifelse(ReceivingBenefitEntry=="Yes","Yes","No"),
+         NoncashExit = ifelse(ReceivingBenefitExit=="Yes","Yes","No")) %>%
+  select(ClientID, IncomeEntry, IncomeExit, NoncashEntry, NoncashExit) %>%
+  unique() -> dat2
+
+full_join(dat1 %>% select(ClientID), dat2, by="ClientID") -> dat2.1
+
+
+dat2.1 %>%
+  mutate(EntrySource = ifelse(IncomeEntry=="Yes"|NoncashEntry=="Yes","Yes","No"),
+         ExitSource = ifelse(IncomeExit=="Yes"|NoncashExit=="Yes","Yes","No")) -> dat2.2
+
+with(dat2.2, table(EntrySource, ExitSource)) %>% 
+  data.frame() %>% 
+  mutate(p = round(Freq/sum(Freq),3)) %>%
+  mutate(Group = c("No-No", "Yes-No", "No-Yes", "Yes-Yes")) -> dat2.3
+
+dat2.2 %>%
+  group_by( ExitSource,EntrySource) %>%
+  summarise(count=n()) %>%
+  mutate(cut.count=sum(count),
+         prop=count/sum(count)) %>%
+  ungroup() %>% 
+  mutate(p = round(count/sum(count),3)) -> dat2.4
+
+ggplot(dat2.4,
+       aes(x = ExitSource, y = prop, width = cut.count, fill = EntrySource)) +
+  geom_bar(stat = "identity", position = "fill", colour = "black") +
+    scale_fill_brewer("Source at Entry" ,palette = "Dark2") +
+  geom_label(aes(label = scales::percent(p)), position = position_stack(vjust = 0.5),show_guide  = F) + # if labels are desired
+  facet_grid(~ExitSource, scales = "free_x", space = "free_x") +
+  theme_minimal() +
+  theme(strip.background =element_rect(fill="white"),
+        axis.ticks = element_blank(),
+        axis.text.x = element_blank(), 
+        axis.text.y = element_blank())+
+  labs(y="", x="Source at Exit", title="Clients' with Monetary/Non-monetary source at Entry/Exit")
+```
+
+The above plot summarizes the ratio of clients who had monetary or non-monetary source of support at entry versus exit of the program. As we can observe, around 96% of the clients did not have change in the status, either did not have any source at entry and exit, or had a source at entry and exit. 
+
+Only 3.6% of the clients who did not have source at entry found a source at exit. And although it is minor, 0.2% of the clients lost their existing source at exit.
+
+```{r}
+dat2.2 %>%
+  filter(EntrySource=="No",ExitSource=="Yes") %>%
+  select(ClientID) %>%
+  as.matrix() %>%
+  as.vector() -> improve
+
+dat2.2 %>%
+  filter(EntrySource=="Yes",ExitSource=="No") %>%
+  select(ClientID) %>%
+  as.matrix() %>%
+  as.vector()  -> lost
+
+dat1 %>%
+  filter(ClientID %in% improve) -> improve.demo
+
+improve.demo %>%
+  select(ClientID, AgeGroup) %>%
+  ggplot(., aes(x=AgeGroup)) +
+  geom_bar(fill="#446455") +
+  theme_bw() +
+  labs(title="Age Group Distribution of Clients with Improved Support Status")
+
+dat1 %>%
+  filter(ClientID %in% lost) -> lost.demo
+
+lost.demo %>%
+  select(ClientID, AgeGroup) %>%
+  ggplot(., aes(x=AgeGroup)) +
+  geom_bar(fill="#972D15") +
+  theme_bw() +
+  labs(title="Age Group Distribution of Clients with Worsened Support Status")
+
+```
+
 
 3. What are the status of the clients at exit? Were they in better condition (e.g. destination)? What are the reasons why the clients left?
+
+```{r}
+dat %>%
+  select(ClientID, EntryDate, ExitDate, ReasonforLeaving) %>%
+  unique() -> dat3
+
+dat3%>% 
+  group_by(ClientID) %>%
+  arrange(ClientID, EntryDate) %>%
+  filter(row_number()==n()) -> dat3.1
+
+dat3.1 %>%
+  filter(ReasonforLeaving !="") -> dat3.2
+
+table(dat3.2$ReasonforLeaving) %>%
+  data.frame() %>%
+  arrange(Freq) %>%
+  select(Var1) %>%
+  as.matrix() %>% as.vector() -> vars
+
+## Generate dataset to plot ethnicity distribution
+dat3.2 %>%
+  mutate(ReasonforLeaving = factor(ReasonforLeaving,levels=vars)) -> dat3.2
+
+ggplot(dat3.2, aes(x=ReasonforLeaving,fill=)) +
+  geom_bar(fill="#046C9A") +
+  coord_flip() +
+  theme_bw() +
+  labs(title="Reason for Leaving", x="Reasons")
+```
+
+
+
+### Relationship between length of stay and client demographics
+
+```{r}
+dat$EntryDate <- as.Date(as.character(dat$EntryDate), "%m/%d/%Y")
+dat$ExitDate <- as.Date(as.character(dat$ExitDate), "%m/%d/%Y")
+
+dat$lengthofstay <- dat$ExitDate-dat$EntryDate
+
+dat %>%
+  select(ClientID, EntryDate, ExitDate, lengthofstay) %>%
+  unique() %>%
+  arrange(ClientID, EntryDate) -> dat4
+
+dat4 %>%
+  group_by(ClientID) %>%
+  summarise(visitnum = n(), ttl_lengthofstay = sum(lengthofstay)) -> dat4.1
+
+left_join(dat, dat4.1, by="ClientID") -> dat
+left_join(dat4, dat4.1, by="ClientID") -> dat4
+
+dat %>%
+  select(ClientID, Gender, Race, Ethnicity, Veteran, visitnum, ttl_lengthofstay) %>%
+  unique() -> dat4.2
+
+left_join(dat4.2, dat1 %>% select(ClientID, AgeGroup), by="ClientID") -> dat4.2
+```
+
+```{r}
+dat4.2 %>%
+  group_by(Race) %>%
+  summarise(LengthofStay = mean(ttl_lengthofstay, na.rm=T), 
+      AverageVisits = mean(visitnum))
+
+dat4.2 %>%
+  group_by(AgeGroup) %>%
+  summarise(LengthofStay = mean(ttl_lengthofstay, na.rm=T), 
+            AverageVisits = mean(visitnum))
+
+dat4.2 %>%
+  group_by(Gender) %>%
+  summarise(LengthofStay = mean(ttl_lengthofstay, na.rm=T), 
+            AverageVisits = mean(visitnum))
+
+dat4.2 %>%
+  group_by(Veteran) %>%
+  summarise(LengthofStay = mean(ttl_lengthofstay, na.rm=T), 
+            AverageVisits = mean(visitnum))
+```
+
+5. How does client recurrence relate to clients who are chronically homeless, youth who age out of the foster care system, and other demographics/community trends?
+
+```{r}
+
+```
+
+
 
