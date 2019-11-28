@@ -1,0 +1,31 @@
+Hello jennprk,
+
+Your project looks good by now. Your README file states the purpose of this project clearly and you also did an excellent job of data wrangling.
+
+1. Is the project organized modularly, with Make as the workflow manager?
+This part has not been finished yet.
+
+2. Does the project use both Python (Pandas specifically) and R (Tidyverse specifically) scripts?
+Yes. The author is proficient in data wrangling with pandas.
+
+3. Is Docker used to define execution environments appropriately?
+This part has not been finished yet.
+
+4. Are the plots appropriate for the data types, the hypotheses being tested, and the points being communicated?
+This part has not been finished yet. According to the description in README file, yes, the plots seems make a lot of sense to answer the questions author raised.
+
+5. How can the project be organized or documented more clearly?
+The structure of the project is well organized.
+
+6. Is the purpose of the project communicated clearly?
+Yes, the purpose of this project is demonstrated clearly in README.
+
+7. Does the purpose of the project make sense from the client’s point of view? How could the project better serve the client?
+Yes, the author focus on the features of clients and comparing their situation when entry and exit.
+
+8. Is the source of the data made clear? (Remember that this project can be part of your public portfolios, so people not familiar with UMD may see it).
+Yes, the source of data is clearly stated in README. The author makes a brief introduction of UMD and their support.
+
+Some suggestions:
+* I have some problem when running your code because you sometimes adopt absolute path instead of relative path. It is inconvenient for others who want to reproduce your project. And you may also face difficulties when you finish docker and make parts.
+

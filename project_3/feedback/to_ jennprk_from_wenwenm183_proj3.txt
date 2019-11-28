@@ -1,0 +1,34 @@
+Provide feedback about the following topics:
+1. Is the project organized modularly, with Make as the workflow manager?
+Yes. Great Job Ji-Eun! 
+
+2. Does the project use both Python (Pandas specifically) and R (Tidyverse specifically) scripts?
+Yes the project uses both Python and R scripts to complete data-processing,  make figure, etc.
+
+3. Is Docker used to define execution environments appropriately?
+Yes, Docker is used to define execution environments appropriately. 
+
+4. Are the plots appropriate for the data types, the hypotheses being tested, and the points being communicated?
+I couldn't find any plots for the data types. I'm not sure if the plots are in there. 
+
+5. How can the project be organized or documented more clearly?
+It is fairly organized right now, but it would be better if you had commented it a little more. 
+
+
+6. Is the purpose of the project communicated clearly?
+Yes, the purpose of the project is clearly communicated. 
+
+7. Does the purpose of the project make sense from the client’s point of view? How could the project better serve the client?
+Your purpose is valid and easy to read. 
+
+8. Is the source of the data made clear? (Remember that this project can be part of your public portfolios, so people not familiar with UMD may see it).
+The data source is both clearly made and you have a detailed background. 
+
+9. Is the interpretation of figures clearly explained?
+I don't think I can find any figures, so I believe there are no interpretations right now. 
+
+10. Is the purpose and interpretation of analysis steps clearly communicated?
+I didn't find any purpose and interpretation of analysis steps in your project. 
+
+11. Are overall take-home messages clearly communicated?
+Did not see any take-home messages. 

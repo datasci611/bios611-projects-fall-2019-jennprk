@@ -1,0 +1,27 @@
+1) No as there was no Make file. It is ok as this is just a draft.
+
+2) Yes the project used both python and the panda package as well as R with tidyverse.
+
+3) No there was no docker file. But it is ok as this is just a draft.
+
+4) There were no graphs. The author only transfered the wrangled data from python.
+Plots should be added but it was clear from the README what plots the author wanted to have.
+
+5)The project is very well organized.
+
+6)Yes the purpose was clearly communicated in the README. The author wanted to know
+the distribution of clients by race, age groups, gender and race. As well as
+the income and non-cash support change from exit and whether there was any improvments.
+
+7)Yes all of the questions posed in the README will help better serve the client.
+
+8)Yes it was included in the background part of the README.
+
+9)There were no figures coded. But from the README after the distribution of clients by race,
+age groups etc... is coded the interpretations will be straight forward.
+
+10)In the python code, the purpose of every chunck of code was explained and clearly communicated.
+There was not a lot of R code.
+
+11) Once the analysis is done and graphs/ plots are coded the take-home messages will be clear and thus
+should be added in the README or Rcode.
