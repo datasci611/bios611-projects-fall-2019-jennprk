@@ -10,10 +10,12 @@ output:
 knitr::opts_chunk$set(echo = F, message = F, warning = F)
 library(tidyverse)
 library(RColorBrewer)
+# library(knitr)
+# library(scales)
 ```
 
 ```{r}
-dat = read.csv("/Users/jieun/github_updated/bios611-projects-fall-2019-jennprk/project_3/data/final.csv")[,-1]
+dat = read.csv("../data/final.csv")[,-1]
 ```
 
 
@@ -89,10 +91,10 @@ dat1.2 %>%
   theme_bw() -> ethnicity.p
 
 ## plot the two plots in one grid
-p1 <- cowplot::plot_grid(race.p, ethnicity.p, nrow=2, align="v")
-p1
+# cowplot::plot_grid(race.p, ethnicity.p, nrow=2, align="v")
 
-ggsave("../results/plots/RaceEthnicityPlot.png", p1)
+ggsave("../results/plots/RacePlot.png", race.p)
+ggsave("../results/plots/RacePlot.png", ethnicity.p)
 ```
 
 As you can see in the plots, majority of UMD's clients are Black or  African American, or white. From ACS (American Community Survey) data collected in 2019, the racial composition of Durham is: White(47.96%), Black or African American(39.65%), Asian(5.18%), Native American (0.25%), Native Hawaiian or Pacific Islander (0.05%). Considering this fact, we can see that there is a very high ratio of Black/African American clients. 
@@ -273,30 +275,30 @@ dat1 %>%
   filter(ClientID %in% improve) -> improve.demo
 
 # Plot improved clients' age group
-improve.demo %>%
+(improve.demo %>%
   select(ClientID, AgeGroup) %>%
   ggplot(., aes(x=AgeGroup)) +
   geom_bar(fill="#446455") +
   theme_bw() +
-  labs(title="Age Group Distribution of Clients with Improved Support Status") -> p6
+  labs(title="Age Group Distribution of Clients with Improved Support Status") -> p6)
 
 # Get demographics of clients with worsened status
 dat1 %>%
   filter(ClientID %in% lost) -> lost.demo
 
 # Plot worsened clients' age group
-lost.demo %>%
+(lost.demo %>%
   select(ClientID, AgeGroup) %>%
   ggplot(., aes(x=AgeGroup)) +
   geom_bar(fill="#ffc425") +
   theme_bw() +
-  labs(title="Age Group Distribution of Clients with Worsened Support Status") -> p7
+  labs(title="Age Group Distribution of Clients with Worsened Support Status") -> p7)
 
 ggsave("../results/plots/AgeGroupImprovedPlot.png",p6)
 ggsave("../results/plots/AgeGroupWorsenPlot.png",p7)
 
-(p8 <- cowplot::plot_grid(p6, p7, nrow=2, align="v"))
-ggsave("../results/plots/AgeGroupImproveWorsenPlot.png",p8)
+# (p8 <- cowplot::plot_grid(p6, p7, nrow=2, align="v"))
+# ggsave("../results/plots/AgeGroupImproveWorsenPlot.png",p8)
 ```
 
 We can see that considering the age distribution of the clients, there is a higher chance of clients in their 20s to have better chance in improving their income status. We can guess that there are more demands for young workers.
