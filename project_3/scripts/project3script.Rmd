@@ -1,7 +1,9 @@
 ---
 title: "Project 3 - Statistics and Visualization"
 author: "Ji-Eun Park"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -28,9 +30,9 @@ UMD has provided 16 datasets including such as client/provider information, disa
 
 ### 1. Demographics of UMD clients
 
-#### Race and Ethnicity
+#### i) Race and Ethnicity
 
-```{r}
+```{r fig.width=5}
 # Race
 ## Select demographical variables from data
 dat1 <- dat %>% 
@@ -97,7 +99,9 @@ As you can see in the plots, majority of UMD's clients are Black or  African Ame
 
 (reference: http://worldpopulationreview.com/us-cities/durham-population/)
 
-#### Age Groups
+
+
+#### ii) Age Groups
 
 ```{r}
 # Generate new variable with age groups for each client
@@ -105,7 +109,7 @@ dat1 <- dat1 %>%
   mutate(AgeGroup = ifelse(AgeEntry<20,"10s",ifelse(AgeEntry<30,"20s",ifelse(AgeEntry<40, "30s",ifelse(AgeEntry<50, "40s",ifelse(AgeEntry<60,"50s",ifelse(AgeEntry<70, "60s",ifelse(AgeEntry<80,"70s",ifelse(AgeEntry<90,"80s","90s"))))))))) 
 ```
 
-```{r}
+```{r fig.width=5}
 # Bar plot for Age groups of clients at Entry
 dat1 %>%
   select(AgeGroup) %>%
@@ -121,9 +125,11 @@ ggsave("../results/plots/AgeGroupPlot.png",p2)
 
 Results show that majority of the clients are in their 20s to 50s, where 40-50s have the highest proportion. 
 
-#### Gender
 
-```{r}
+
+#### iii) Gender
+
+```{r fig.width=5}
 # generate the number of clients in each gender status
 dat1 %>%
   group_by(Gender) %>%
@@ -155,9 +161,10 @@ ggsave("../results/plots/GenderPlot.png",p3)
 You can see that the clients at UMD have 72% male clients and 28% female clients. Very minor, but there also exists some MTF clients. 
 
 
-#### Veteran Status
 
-```{r}
+#### iv) Veteran Status
+
+```{r fig.width=5}
 # Change the levl of the Veterans so that it can be displayed as expected
 dat1 %>%
   mutate(Veteran = factor(Veteran, levels=c("Yes","No","Data not collected"))) -> dat1
@@ -192,9 +199,11 @@ ggsave("../results/plots/VeteranPlot.png",p4)
 12.3% of the clients are veterans.
 
 
+
+
 ###  2. How did the income and non-cash support change from entry to exit? Were there any improvements?
 
-```{r}
+```{r fig.width=5}
 # select variables related to income non-cash support at entry and exit
 dat %>%
   select(ClientID, IncomeEntry, IncomeExit, ReceivingBenefitEntry, ReceivingBenefitExit) %>%
@@ -227,7 +236,7 @@ dat2 %>%
 (ggplot(dat2.2,
        aes(x = ExitSource, y = prop, width = cut.count, fill = EntrySource)) +
   geom_bar(stat = "identity", position = "fill", colour = "black") +
-    scale_fill_brewer("Source at Entry" ,palette = "Dark2") +
+    scale_fill_manual(values=c("#f37735", "maroon")) +
   geom_label(aes(label = scales::percent(p)), position = position_stack(vjust = 0.5),show_guide  = F) + # if labels are desired
   facet_grid(~ExitSource, scales = "free_x", space = "free_x") +
   theme_minimal() +
@@ -244,7 +253,7 @@ The above plot summarizes the ratio of clients who had monetary or non-monetary 
 
 Only 3.6% of the clients who did not have source at entry found a source at exit. And although it is minor, 0.2% of the clients lost their existing source at exit.
 
-```{r}
+```{r fig.width=5}
 # Filter the clients who had improved status (No income, no non-cash support at entry, either at exit)
 dat2 %>%
   filter(EntrySource=="No",ExitSource=="Yes") %>%
@@ -279,7 +288,7 @@ dat1 %>%
 lost.demo %>%
   select(ClientID, AgeGroup) %>%
   ggplot(., aes(x=AgeGroup)) +
-  geom_bar(fill="#972D15") +
+  geom_bar(fill="#ffc425") +
   theme_bw() +
   labs(title="Age Group Distribution of Clients with Worsened Support Status") -> p7
 
@@ -290,11 +299,14 @@ ggsave("../results/plots/AgeGroupWorsenPlot.png",p7)
 ggsave("../results/plots/AgeGroupImproveWorsenPlot.png",p8)
 ```
 
-We can see that considering the age distribution of the patients, there is a higher chance of clients in their 20s to have better chance in improving their income status. We can guess that there are more demands for young workers.
+We can see that considering the age distribution of the clients, there is a higher chance of clients in their 20s to have better chance in improving their income status. We can guess that there are more demands for young workers.
 
-### 3. What are the status of the clients at exit? Were they in better condition (e.g. destination)? What are the reasons why the clients left?
 
-```{r}
+
+
+### 3. What are the major reasons why the clients left?
+
+```{r c}
 # Choose variables of interest
 dat %>%
   select(ClientID, EntryDate, ExitDate, ReasonforLeaving) %>%
@@ -324,9 +336,58 @@ dat3.1 %>%
 ggsave("../results/plots/LeavingReasonPlot.png", p9)
 ```
 
-We can see that the reason for leaving is unknown or clients disappeared. This may imply that there are some underlying problems that clients are facing and had to leave without telling UMD. There are many possibilities but one possibility is that the status of the clients did not improve while staying at UMD. It is important to look deeper into client care.
+We can see that the major reason for leaving is unknown or clients disappeared. This may imply that there are some underlying problems that clients are facing and had to leave without telling UMD. There are many possibilities but one possibility is that the status of the clients did not improve while staying at UMD. It is important to look deeper into client care.
 
 Also, many clients left due to completion of program or housing opportunities, around 200 clients (out of 2352) had to leave due to non-compliance or due to needs not met. This is also something UMD might want to look into, in order to provide more service and goods to variety of people. 
+
+Let's look deeper on who left for each reason.
+
+```{r}
+## Agegroup 
+dat1%>%group_by(AgeGroup)%>%summarise(ttlcnt = n())%>%select(ttlcnt) %>% as.matrix %>%as.vector-> ttln
+
+### Unknown/Disappeared
+disap <- dat3.1$ClientID[dat3.1$ReasonforLeaving == "Unknown/Disappeared"]
+
+dat1 %>%
+  filter(ClientID %in% disap) %>%
+  group_by(AgeGroup) %>%
+  summarise(count =n()) %>%
+  mutate(totalcount = ttln, 
+         percentage = round(count/ ttln,3)) %>%
+  # knitr::kable(., format="html", caption = "Age distribution in clients reason for leaving is unknown/disappeared") %>%
+  knitr::kable(., caption = "Age distribution in clients reason for leaving is unknown/disappeared") 
+  # kableExtra::kable_styling(bootstrap_options = "basic", full_width = FALSE)
+
+### Needs could not be met
+unsat <- dat3.1$ClientID[dat3.1$ReasonforLeaving == "Needs could not be met"]
+
+dat1 %>%
+  filter(ClientID %in% unsat) %>%
+  group_by(AgeGroup) %>%
+  summarise(count =n()) %>%
+  mutate(totalcount = ttln, 
+         percentage = round(count/ ttln,3)) %>%
+  # knitr::kable(., format="html", caption = "Age distribution in unsatisfied clients")  %>%
+  knitr::kable(., caption = "Age distribution in unsatisfied clients")  
+  # kableExtra::kable_styling(bootstrap_options = "basic", full_width = FALSE)
+
+### Completed
+comp <- dat3.1$ClientID[dat3.1$ReasonforLeaving == "Completed program"]
+dat1 %>%
+  filter(ClientID %in% comp) %>%
+  group_by(AgeGroup) %>%
+  summarise(count =n()) %>%
+  mutate(totalcount = ttln, 
+         percentage = round(count/ ttln,3)) %>%
+  # knitr::kable(., format="html", caption = "Age distribution in clients complete program") %>%
+    knitr::kable(., caption = "Age distribution in clients complete program") 
+  # kableExtra::kable_styling(bootstrap_options = "basic", full_width = FALSE)
+```
+
+One noticeable characteristics of patients for the major reasons for leaving is that clients from 20s and 30s were more likely to disappear or leave without giving reason compared to 40s to 60s who were more likely to stay until completion of the program.
+
+This may indicate that the UMD service is focused on elders but not youngs.
 
 
 ### 4. Relationship between length of stay and client demographics
@@ -364,19 +425,22 @@ dat %>%
                                       "Client doesn't know"))) -> dat4.2
 
 left_join(dat4.2, dat1 %>% select(ClientID, AgeGroup), by="ClientID") %>%
-  mutate(AgeGroup = factor(AgeGroup, levels=c("10s","20s","30s","40s","50s","60s","70s"))) -> dat4.2
+  mutate(AgeGroup = factor(AgeGroup, levels=c("10s","20s","30s","40s","50s","60s","70s")),
+         Gender = factor(Gender, levels=c("Female","Male","Trans Female (MTF or Male to Female)"))) -> dat4.2
 ```
 
-#### Race 
 
-```{r fig.width=8}
+
+#### i) Race 
+
+```{r fig.width=10}
 # Summarise by Race
 kruskal.test(ttl_lengthofstay ~ Race, data = dat4.2)$p.value-> kwrace
 
-(ggplot(dat4.2, aes(x=Race,y=ttl_lengthofstay, color=Race)) +
-  geom_boxplot(outlier.shape = NA) +
+(ggplot(dat4.2, aes(x=Race,y=ttl_lengthofstay)) +
+  geom_boxplot(outlier.shape = NA, fill="maroon") +
   labs(title= "Total length of Stay by Race Groups",
-       y = "Total Length of Stay", x = "Race Group") +
+       y = "Total Length of Stay") +
   coord_flip() +
   scale_x_discrete(limits = rev(levels(dat4.2$Race))) +
   annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwrace,3)) , vjust=1, hjust=1) +
@@ -385,17 +449,19 @@ kruskal.test(ttl_lengthofstay ~ Race, data = dat4.2)$p.value-> kwrace
   theme(legend.position = "none")  -> p10)
 
 ggsave("../results/plots/ttllengthofstayRacePlot.png", p10)
+```
 
+```{r fig.width=10}
 # Result removing clients with race unknown
 dat4.2 %>%
   filter(!Race %in% c("Client refused","Data not collected","Client doesn't know")) %>%
   mutate(Race = droplevels(Race)) -> dat4.3
 kruskal.test(ttl_lengthofstay ~ Race, data = dat4.3)$p.value-> kwrace
 
-(ggplot(dat4.3, aes(x=Race,y=ttl_lengthofstay, color=Race)) +
-  geom_boxplot(outlier.shape = NA) +
-  labs(title= "Total length of Stay by Race Groups (Race Info Known)",
-       y = "Total Length of Stay", x = "Race Group") +
+(ggplot(dat4.3, aes(x=Race,y=ttl_lengthofstay)) +
+  geom_boxplot(outlier.shape = NA, fill="maroon") +
+  labs(title= "Total length of Stay by Race Groups\n(Race Info Known)",
+       y = "Total Length of Stay") +
   coord_flip() +
   scale_x_discrete(limits = rev(levels(dat4.3$Race))) +
   annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwrace,3)) , vjust=1, hjust=1) +
@@ -408,15 +474,18 @@ ggsave("../results/plots/ttllengthofstayRacePlot2.png", p11)
 
 Above are the boxplots which shows the distribution of the total length of stay clients in each Race group. The first one is based on the entire dataset, while the second one is only based on data with Race group known. I used the Kruskal Wallis test, which is a non-parametric multigroup comparison test to see if there's significant difference in the total length of stay among race groups. However, both results does not show significant difference (p=0.267, 0.094) under the significance level 0.05.
 
-#### Age Group
-```{r fig.width=8}
+
+
+#### ii) Age Group
+
+```{r fig.width=5}
 # Summarise by AgeGroup
 kruskal.test(ttl_lengthofstay ~ AgeGroup, data = dat4.2)$p.value-> kwage
 
-(ggplot(dat4.2, aes(x=AgeGroup,y=ttl_lengthofstay, color=AgeGroup)) +
-  geom_boxplot(outlier.shape = NA) +
+(ggplot(dat4.2, aes(x=AgeGroup,y=ttl_lengthofstay)) +
+  geom_boxplot(outlier.shape = NA, fill="#f37735") +
   labs(title= "Total length of Stay by Age Groups",
-       y = "Total Length of Stay", x = "Age Group") +
+       y = "Total Length of Stay") +
   coord_flip() +
   scale_x_discrete(limits = rev(levels(dat4.2$AgeGroup))) +
   annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwage,3)) , vjust=1, hjust=1) +
@@ -438,16 +507,17 @@ Above are the boxplots which shows the distribution of the total length of stay 
 Hence, we can see that clients in their 20s, 30s tend to have a significantly lower total length of stay.
 
 
-#### Gender
 
-```{r fig.width=8}
+#### iii) Gender
+
+```{r fig.width=10}
 # Summarise by Gender
 kruskal.test(ttl_lengthofstay ~ Gender, data = dat4.2)$p.value-> kwgen
 
-(ggplot(dat4.2, aes(x=Gender,y=ttl_lengthofstay, color=Gender)) +
-  geom_boxplot(outlier.shape = NA) +
-  labs(title= "Total length of Stay by Gender Groups",
-       y = "Total Length of Stay", x = "Gender Group") +
+(ggplot(dat4.2, aes(x=Gender,y=ttl_lengthofstay)) +
+  geom_boxplot(outlier.shape = NA, fill="#ffc425") +
+  labs(title= "Total length of Stay by Gender",
+       y = "Total Length of Stay") +
   coord_flip() +
   scale_x_discrete(limits = rev(levels(dat4.2$Gender))) +
   annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwgen,3)) , vjust=1, hjust=1) +
@@ -460,14 +530,16 @@ ggsave("../results/plots/ttllengthofstayGenderPlot.png", p13)
 
 Same process was done on Gender groups, but there were no significant difference between Gender groups.
 
-#### Veteran status
 
-```{r fig.width=8}
+
+#### iv) Veteran status
+
+```{r fig.width=10}
 # Summarise by Veteran status
 kruskal.test(ttl_lengthofstay ~ Veteran, data = dat4.2)$p.value -> kwvet
 
-(ggplot(dat4.2, aes(x=Veteran,y=ttl_lengthofstay, color=Veteran)) +
-  geom_boxplot(outlier.shape = NA) +
+(ggplot(dat4.2, aes(x=Veteran,y=ttl_lengthofstay)) +
+  geom_boxplot(outlier.shape = NA,fill=brewer.pal(7, "Dark2")[5]) +
   labs(title= "Total length of Stay by Veteran Status",
        y = "Total Length of Stay", x = "Veteran Status") +
   coord_flip() +
@@ -478,16 +550,18 @@ kruskal.test(ttl_lengthofstay ~ Veteran, data = dat4.2)$p.value -> kwvet
   theme(legend.position = "none") -> p14)
 
 ggsave("../results/plots/ttllengthofstayVeteranPlot.png", p14)
+```
 
+```{rfig.width=10}
 # Result removing clients with race unknown
 dat4.2 %>%
   filter(!Veteran %in% c("Data not collected")) %>%
   mutate(Veteran = droplevels(Veteran)) -> dat4.3
 kruskal.test(ttl_lengthofstay ~ Veteran, data = dat4.3)$p.value-> kwvet
 
-(ggplot(dat4.3, aes(x=Veteran,y=ttl_lengthofstay, color=Veteran)) +
-  geom_boxplot(outlier.shape = NA) +
-  labs(title= "Total length of Stay by Veteran Status (Veteran status Info Known)",
+(ggplot(dat4.3, aes(x=Veteran,y=ttl_lengthofstay)) +
+  geom_boxplot(outlier.shape = NA,fill=brewer.pal(7, "Dark2")[5]) +
+  labs(title= "Total length of Stay by Veteran Status\n(Veteran status Info Known)",
        y = "Total Length of Stay", x = "Veteran status") +
   coord_flip() +
   scale_x_discrete(limits = rev(levels(dat4.3$Veteran))) +
@@ -501,53 +575,54 @@ ggsave("../results/plots/ttllengthofstayVeteranPlot2.png", p15)
 
 For Veteran status, the difference was checked for both 1)whole data, and 2)data without clients with unkown veteran status. Interestingly both Kruskal Wallis test results show there is significant difference in total length of stay between veteran status. Since we only have two veteran status (veteran vs not veteran), it is implied from the boxplot that veterans have lower total length of stay thn non veterans.
 
-### 5. How does client recurrence relate to clients who are demographics?
+### 5. Relationship between client recurrence and demographics
 
-Same process as question 4.
+Same process as question 4. Although we are using non-parametric methods to test significance different groups, since the values are very small, barplots will be used instead of boxplots.
 
-#### Race 
+#### i) Race 
 
-```{r fig.width=8}
+```{r fig.width=10}
 # Summarise by Race
 kruskal.test(visitnum ~ Race, data = dat4.2)$p.value-> kwrace
 
-(ggplot(dat4.2, aes(x=Race,y=visitnum, color=Race)) +
-  geom_boxplot(outlier.shape = NA) +
-  labs(title= "Number of visits by Race Groups",
-       y = "Number of visits", x = "Race Group") +
-  coord_flip() +
-  scale_x_discrete(limits = rev(levels(dat4.2$Race))) +
-  annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwrace,3)) , vjust=1, hjust=1) +
-  ylim(0.7,3.5) +
-  theme_bw() +
-  theme(legend.position = "none") -> p16)
+(dat4.2 %>%
+    group_by(Race) %>%
+    summarise(meanvisit=mean(visitnum)) %>%
+    ggplot(., aes(x=Race,y=meanvisit)) +
+    geom_bar(stat="identity", fill="#046C9A") +
+    labs(title= "Number of visits by Race Groups",
+         y = "Average Number of visits") +
+    coord_flip() +
+    scale_x_discrete(limits = rev(levels(dat4.2$Race))) +
+    annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwrace,3)) , vjust=1, hjust=1) +
+    # ylim(0.7,3.5) +
+    theme_bw() +
+    theme(legend.position = "none") -> p16)
 
 ggsave("../results/plots/numstayRacePlot.png", p16)
+```
 
+```{r fig.width=10}
 # Result removing clients with race unknown
 dat4.2 %>%
   filter(!Race %in% c("Client refused","Data not collected","Client doesn't know")) %>%
   mutate(Race = droplevels(Race)) -> dat4.3
 
 kruskal.test(visitnum ~ Race, data = dat4.3)$p.value-> kwrace
-kruskal.test(visitnum ~ Race, data = dat4.3) -> t
 
-dat4.3 %>%
-  group_by(Race) %>%
-  summarise(mean(visitnum))
-ggplot(dat4.3, aes(group=Race,x=visitnum, color=Race)) +
-  geom_bar()
-
-(ggplot(dat4.3, aes(x=Race,y=visitnum, color=Race)) +
-  geom_boxplot(outlier.shape = NA) +
-  labs(title= "Number of visits by Race Groups (Race Info Known)",
-       y = "Number of visits", x = "Race Group") +
-  coord_flip() +
-  scale_x_discrete(limits = rev(levels(dat4.3$Race))) +
-  annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwrace,3)) , vjust=1, hjust=1) +
-  ylim(0.7,3.5) +
-  theme_bw() +
-  theme(legend.position = "none") -> p17)
+(dat4.3 %>%
+    group_by(Race) %>%
+    summarise(meanvisit=mean(visitnum)) %>%
+    ggplot(., aes(x=Race,y=meanvisit)) +
+    geom_bar(stat="identity", fill="#046C9A") +
+    labs(title= "Number of visits by Race Groups",
+         y = "Average Number of visits") +
+    coord_flip() +
+    scale_x_discrete(limits = rev(levels(dat4.3$Race))) +
+    annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwrace,3)) , vjust=1, hjust=1) +
+    # ylim(0.7,3.5) +
+    theme_bw() +
+    theme(legend.position = "none") -> p17)
   
 ggsave("../results/plots/numstayRacePlot2.png", p17)
 
@@ -564,28 +639,32 @@ data.frame(p=as.numeric(pwrace),comparison=c("White vs Black/African American",
                                              "Native Hawaiian/Other Pacific Islander vs American Indian/Alaska Native",
                                              "Asian vs American Indian/Alaska Native",
                                              "Asian vs Native Hawaiian/Other Pacific Islander")) -> pwrace
-paste(pwrace[pwrace$p<0.05,"comparison"], collapse = ", ")
 ```
 
 Same process was done with number of visits instead of total length of stay. Results show that when data with unkown race were removed, there are significant differences between some Race groups. Based on wilcoxon rank sum test, `r paste(pwrace[pwrace$p<0.05,"comparison"], collapse = ",")` have significant difference. 
-
 Hence we can see Native Hawaiian or Other Pacific Islanders have significantly less recurrence compared to White or Black/African American clients.
 
-#### Age Group
-```{r fig.width=8}
+
+
+#### ii) Age Group
+
+```{r fig.width=10}
 # Summarise by AgeGroup
 kruskal.test(visitnum ~ AgeGroup, data = dat4.2)$p.value-> kwage
 
-(ggplot(dat4.2, aes(x=AgeGroup,y=visitnum, color=AgeGroup)) +
-  geom_boxplot(outlier.shape = NA) +
-  labs(title= "Number of Visits by Age Groups",
-       y = "Number of Visits", x = "Age Group") +
-  coord_flip() +
-  scale_x_discrete(limits = rev(levels(dat4.2$AgeGroup))) +
-  annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwage,3)) , vjust=1, hjust=1) +
-  ylim(0.7,3) +
-  theme_bw() +
-  theme(legend.position = "none") -> p18)
+(dat4.2  %>%
+    group_by(AgeGroup) %>%
+    summarise(meanvisit=mean(visitnum)) %>%
+    ggplot(., aes(x=AgeGroup,y=meanvisit)) +
+    geom_bar(stat="identity", fill="#ffc425") +
+    labs(title= "Number of visits by Age Groups",
+         y = "Average Number of visits") +
+    coord_flip() +
+    scale_x_discrete(limits = rev(levels(dat4.2$AgeGroup))) +
+    annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwage,3)) , vjust=1, hjust=1) +
+    # ylim(0.7,3.5) +
+    theme_bw() +
+    theme(legend.position = "none") -> p18)
 
 ggsave("../results/plots/numstayAgePlot.png", p18)
 
@@ -597,75 +676,104 @@ data.frame(p=as.numeric(pwage),comparison=c("20s vs 10s","30s vs 10s","40s vs 10
 
 Kruskal-Wallis test showed significant difference in number of visits between some Age groups. Based on pairwise wilcoxon test we know that the following groups have significant difference:  `r paste(pwage[pwage$p<0.05,"comparison"], collapse = ",")`.
 
-Hence, we can see that clients in their 70s tend to have a significantly lower recurrence.
+Hence, we can see that clients in their 60s and 70s tend to have a significantly lower recurrence.
 
 
-#### Gender
 
-```{r fig.width=8}
+#### iii) Gender
+
+```{r fig.width=10}
 # Summarise by Gender
 kruskal.test(visitnum ~ Gender, data = dat4.2)$p.value-> kwgen
 
-(ggplot(dat4.2, aes(x=Gender,y=visitnum, color=Gender)) +
-  geom_boxplot(outlier.shape = NA) +
-  labs(title= "Number of Visits by Gender Groups",
-       y = "Number of Visits", x = "Gender Group") +
-  coord_flip() +
-  scale_x_discrete(limits = rev(levels(dat4.2$Gender))) +
-  annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwgen,3)) , vjust=1, hjust=1) +
-  ylim(0.7,4) +
-  theme_bw() +
-  theme(legend.position = "none") -> p19)
+(dat4.2 %>%
+    group_by(Gender) %>%
+    summarise(meanvisit=mean(visitnum)) %>%
+    ggplot(., aes(x=Gender,y=meanvisit)) +
+    geom_bar(stat="identity", fill="#7570B3") +
+    labs(title= "Number of visits by Gender Groups",
+         y = "Average Number of visits") +
+    coord_flip() +
+    scale_x_discrete(limits = rev(levels(dat4.2$Gender))) +
+    annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwgen,3)) , vjust=1, hjust=1) +
+    # ylim(0.7,3.5) +
+    theme_bw() +
+    theme(legend.position = "none") -> p19)
 
 ggsave("../results/plots/numstayGenderPlot.png", p19)
 
+pairwise.wilcox.test(as.numeric(dat4.2$visitnum), dat4.2$Gender, p.adj = "none")$p.value %>%
+  as.vector() -> pwgender
+round(pwgender[!is.na(pwgender)],2) -> pwgender
+data.frame(p=as.numeric(pwgender),comparison=c("Male vs Female", "Trans Female vs Female", "Trans Female vs Male")) -> pwgender
+
 ```
 
-Same process was done on Gender groups, but there were no significant difference between Gender groups.
+Same process was done on Gender groups, and results show that there are significant differences between some Gender groups. Based on wilcoxon rank sum test, `r paste(pwgender[pwgender$p<0.05,"comparison"], collapse = ",")` have significant difference. To be specific, male clients have longer stay than female clients.
 
-#### Veteran status
 
-```{r fig.width=8}
+#### iv) Veteran status
+
+```{r fig.width=10}
 # Summarise by Veteran status
 kruskal.test(visitnum ~ Veteran, data = dat4.2)$p.value -> kwvet
 
-(ggplot(dat4.2, aes(x=Veteran,y=visitnum, color=Veteran)) +
-  geom_boxplot(outlier.shape = NA) +
-  labs(title= "Number of Visits by Veteran Status",
-       y = "Number of Visits", x = "Veteran Status") +
-  coord_flip() +
-  scale_x_discrete(limits = rev(levels(dat4.2$Veteran))) +
-  annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwvet,3)) , vjust=1, hjust=1) +
-  ylim(0.7,4) +
-  theme_bw() +
-  theme(legend.position = "none") -> p20)
+(dat4.2 %>%
+    group_by(Veteran) %>%
+    summarise(meanvisit=mean(visitnum)) %>%
+    ggplot(., aes(x=Veteran,y=meanvisit)) +
+    geom_bar(stat="identity", fill="#f37735") +
+    labs(title= "Number of visits by Veteran Statuss",
+         y = "Average Number of visits") +
+    coord_flip() +
+    scale_x_discrete(limits = rev(levels(dat4.2$Veteran))) +
+    annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwvet,3)) , vjust=1, hjust=1) +
+    # ylim(0.7,3.5) +
+    theme_bw() +
+    theme(legend.position = "none")  -> p20)
 
 ggsave("../results/plots/numstayVeteranPlot.png", p20)
+```
 
-
+```{r fig.width=10}
 # Result removing clients with race unknown
 dat4.2 %>%
   filter(!Veteran %in% c("Data not collected")) %>%
   mutate(Veteran = droplevels(Veteran)) -> dat4.3
 kruskal.test(visitnum ~ Veteran, data = dat4.3)$p.value-> kwvet
 
-
-(ggplot(dat4.3, aes(x=Veteran,y=visitnum, color=Veteran)) +
-  geom_boxplot() +
-  labs(title= "Number of Visits by Veteran Status (Veteran status Info Known)",
-       y = "Number of Visits", x = "Veteran status") +
-  coord_flip() +
-  scale_x_discrete(limits = rev(levels(dat4.3$Veteran))) +
-  annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwvet,3)) , vjust=1, hjust=1) +
-  ylim(0.7,3) +
-  theme_bw() +
-  theme(legend.position = "none")  -> p21)
+(dat4.3 %>%
+    group_by(Veteran) %>%
+    summarise(meanvisit=mean(visitnum)) %>%
+    ggplot(., aes(x=Veteran,y=meanvisit)) +
+    geom_bar(stat="identity", fill="#f37735") +
+    labs(title= "Number of visits by Veteran Statuss",
+         y = "Average Number of visits") +
+    coord_flip() +
+    scale_x_discrete(limits = rev(levels(dat4.3$Veteran))) +
+    annotate("text",  x=Inf, y = Inf, label = paste("p=", round(kwvet,3)) , vjust=1, hjust=1) +
+    # ylim(0.7,3.5) +
+    theme_bw() +
+    theme(legend.position = "none") -> p21)
 
 ggsave("../results/plots/numstayVeteranPlot2.png", p21)
+
 ```
 
 For Veteran status, the difference was checked for both 1)whole data, and 2)data without clients with unkown veteran status. Since we only have two veteran status (veteran vs not veteran), it is implied from the boxplot that veterans have lower recurrence than non veterans.
 
 ## Conclusion
+
+- UMD’s service is focused on clients in elders (especially 40s-50s), mostly composed with Black/African American, Male clients.
+
+
+- Clients in their 20s seem to have better chance of improving their income or non-cash support status while at UMD, which is quite reasonable as the job market prefer young workers.
+
+- Not surprisingly, clients in 20-30s also have shorter length of stay, and elder clients have longer length of stay and tend to revisit UMD more than younger clients.
+
+- Nonetheless, satisfaction of UMD’s service seems to be higher in elders (40s-60s)
+
+- However, UMD should not neglect developing service suitable for young clients. Otherwise, UMD can focus on clients from 40s, and transfer young clients to shelters that focus more on them.
+
 
 

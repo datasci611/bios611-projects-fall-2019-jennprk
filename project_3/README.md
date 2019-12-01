@@ -18,6 +18,10 @@ UMD has provided 16 datasets including such as client/provider information, disa
 
 3. What are the status of the clients at exit? Were they in better condition (e.g. destination)? What are the reasons why the clients left?
 
+4. Is there a relationship between length of stay and client demographics?
+
+5. How does client recurrence relate to clients who are demographics?
+
 ### Data Analysis
 This project will be structured using Docker and Make. Data wrangling will be done based on Python Pandas and additional statistical analysis and plot generation will be done in R.
 
