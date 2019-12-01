@@ -25,5 +25,8 @@ UMD has provided 16 datasets including such as client/provider information, disa
 ### Data Analysis
 This project will be structured using Docker and Make. Data wrangling will be done based on Python Pandas and additional statistical analysis and plot generation will be done in R.
 
+### Note
+
+To generate report pull the repository, clone project_3 folder and set the directory to /project_3/scripts. Then run *'make'* command on your terminal.
 
 
