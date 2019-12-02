@@ -27,6 +27,6 @@ This project will be structured using Docker and Make. Data wrangling will be do
 
 ### Note
 
-To generate report pull the repository, clone project_3 folder and set the directory to /project_3/scripts. Then run *'make'* command on your terminal.
+To generate the final report, clone this repository and set the current directory as /project_3/scripts. Then run the *'make'* command on your terminal. Then the final report will be generated in the /project_3/results folder.
 
 
